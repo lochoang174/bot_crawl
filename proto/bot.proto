@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package bot;
+
+// Gói tin từ client gửi lên
+message BotCommand {
+  enum CommandType {
+    START = 0;
+    STOP = 1;
+  }
+
+  CommandType type = 1;   // START or STOP
+  string bot_id = 2;      // ID của bot (tùy bạn thiết kế)
+}
+
+// Gói tin server stream về client
+message BotLog {
+  string bot_id = 1;
+  string message = 2;
+
+}
+
+// gRPC Service
+service BotService {
+  rpc StreamBotLogs(stream BotCommand) returns (stream BotLog);
+}
