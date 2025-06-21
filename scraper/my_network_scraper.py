@@ -6,11 +6,14 @@ from typing import List, Dict, Optional
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from scraper.data_manager import DataManager
+from repositories.url_repository import UrlRepository
+from models.status_enum import UrlStatus
 
 class LinkedInMyNetworkScraper:
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 20)
+        self.url_repository = UrlRepository()  # Initialize the UrlRepository
         
     
     def scroll_to_show_more(self, timeout: int = 10) -> bool:
@@ -55,27 +58,24 @@ class LinkedInMyNetworkScraper:
 
             # Step 1: Scroll until "More suggestions for you" is visible
             print("🔍 Đang cuộn trang để tìm 'More suggestions for you'...")
-            max_scroll_attempts = 10  # Limit the number of scroll attempts to prevent infinite scrolling
+            max_scroll_attempts = 10
             scroll_attempts = 0
 
             while scroll_attempts < max_scroll_attempts:
                 try:
-                    # Locate the "More suggestions for you" section
                     h2_element = self.driver.find_element(By.XPATH, "//h2[normalize-space()='More suggestions for you']")
                     if h2_element.is_displayed():
-                        print("✅ Đã tìm thấy 'More suggestions for you'. Dừng cuộn.")
+                        print("✅ Đã tìm thấy 'More suggestions cho bạn'. Dừng cuộn.")
                         break
                 except NoSuchElementException:
                     pass
 
-                # Scroll the page incrementally
                 HumanBehaviorSimulator.scroll_main_to_bottom(self.driver)
                 HumanBehaviorSimulator.random_delay(1, 2)
                 scroll_attempts += 1
 
-                # If max scroll attempts are reached, stop scrolling
                 if scroll_attempts >= max_scroll_attempts:
-                    print("❌ Không tìm thấy 'More suggestions for you' sau khi cuộn tối đa số lần.")
+                    print("❌ Không tìm thấy 'More suggestions cho bạn' sau khi cuộn tối đa số lần.")
                     return []
 
             # Step 2: Save all "Show all" buttons into a dictionary
@@ -84,23 +84,23 @@ class LinkedInMyNetworkScraper:
             buttons_dict = {index: button for index, button in enumerate(show_all_buttons)}
             print(f"✅ Đã lưu {len(buttons_dict)} nút 'Show all' vào dictionary.")
 
-            profile_urls = []
+            # Initialize the vm counter
+            vm_counter = 1
+            max_vm = 4
 
             # Step 3: Iterate through each "Show all" button and process it
             for index, button in buttons_dict.items():
                 try:
                     print(f"\n🚀 Đang xử lý nút 'Show all' thứ {index + 1}...")
-                    
-                    # Scroll to the button and click it
                     self.driver.execute_script("arguments[0].scrollIntoView();", button)
                     HumanBehaviorSimulator.random_delay(1, 2)
                     button.click()
                     print("✅ Đã click nút 'Show all'.")
 
-                    # Scroll the modal until no more content can be loaded or 20 seconds without new profiles
+                    # Scroll the modal and collect profile URLs
                     scroll_count = 0
                     last_profile_count = 0
-                    same_count_duration = 0  # Track how long the profile count remains the same
+                    same_count_duration = 0
 
                     while True:
                         if not self.scroll_to_show_more(timeout=7):
@@ -108,23 +108,24 @@ class LinkedInMyNetworkScraper:
                             break
                         scroll_count += 1
                         print(f"👍 Đã scroll lần thứ {scroll_count}.")
-                        
-                        # Collect and save profile URLs after each scroll
+
+                        # Collect profile URLs and save them to MongoDB
                         new_profile_urls = self._collect_profile_urls()
-                        profile_urls.extend(new_profile_urls)
-                        profile_urls = list({profile['url']: profile for profile in profile_urls}.values())  # Remove duplicates
-                        DataManager.save_profiles_to_file(profile_urls, "my_connect_profile_urls.json")
-                        print(f"✅ Đã lưu {len(profile_urls)} profile URLs vào file sau lần scroll thứ {scroll_count}.")
+                        for profile in new_profile_urls:
+                            self.url_repository.create(profile['url'], status=UrlStatus.PENDING, vm=vm_counter)
+                            print(f"✅ Đã lưu profile URL với vm={vm_counter} vào MongoDB.")
+                            # Increment vm_counter and reset if it exceeds max_vm
+                            vm_counter = vm_counter + 1 if vm_counter < max_vm else 1
 
                         # Check if profile count remains the same
-                        if len(profile_urls) == last_profile_count:
+                        if len(new_profile_urls) == last_profile_count:
                             same_count_duration += 1
-                            if same_count_duration == 1:  # 20 seconds of no new profiles
-                                print("⏳ Không có profile mới trong 20 giây. Đóng modal và tiếp tục.")
+                            if same_count_duration >= 2:
+                                print("⏳ Không có profile mới. Đóng modal và tiếp tục.")
                                 break
                         else:
-                            same_count_duration = 0  # Reset duration if new profiles are found
-                            last_profile_count = len(profile_urls)
+                            same_count_duration = 0
+                            last_profile_count = len(new_profile_urls)
 
                     # Close the modal
                     close_button = self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']")
@@ -139,31 +140,26 @@ class LinkedInMyNetworkScraper:
                     continue
 
             print("✅ Hoàn thành việc xử lý tất cả các nút 'Show all'.")
-            return profile_urls
+            return []
 
         except Exception as e:
             print(f"❌ Lỗi trong quá trình mở rộng danh sách: {e}")
             return []
-    
 
-    def _collect_profile_urls(self) -> List[Dict]:      
+    def _collect_profile_urls(self) -> List[Dict]:
         try:
             profile_urls = []
             grid_items = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "#root > dialog > div > div > div > div > section > div > div > div"))
             )
-            
             a_tags = grid_items.find_elements(By.TAG_NAME, "a")
             for a in a_tags:
                 profile_url = a.get_attribute("href")
                 if profile_url:
                     profile_urls.append({"url": profile_url})
-                    
-            # Loại bỏ duplicate
-            profile_urls = list({profile['url']: profile for profile in profile_urls}.values())
-                    
-            print(f"🔍 Tìm thấy tổng cộng {len(profile_urls)} profile URLs.")
 
+            profile_urls = list({profile['url']: profile for profile in profile_urls}.values())
+            print(f"🔍 Tìm thấy tổng cộng {len(profile_urls)} profile URLs.")
             return profile_urls
 
         except Exception as e:
