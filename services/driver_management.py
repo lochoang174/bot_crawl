@@ -8,6 +8,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import json
 import os
+from selenium import webdriver
+from selenium.webdriver.edge.options import Options as EdgeOptions
 class ChromeDriverManager:
     """Quản lý việc tạo và cấu hình Chrome Driver"""
     
@@ -66,3 +68,30 @@ class ChromeDriverManager:
             print(f"❌ Lỗi khi khởi tạo driver: {e}")
             return None
 
+    def create_edge_driver_with_session(self):
+            print("Đang khởi tạo Microsoft Edge Driver với session...")
+
+            if not os.path.exists(self.profile_path):
+                os.makedirs(self.profile_path)
+                print(f"✅ Đã tạo thư mục profile: {self.profile_path}")
+
+            options = EdgeOptions()
+
+            # Sử dụng user profile (Edge dùng chung format với Chrome)
+            options.add_argument(f"--user-data-dir={self.profile_path}")
+            options.add_argument("--profile-directory=Default")
+            
+            # Thêm các tùy chọn giống như bạn dùng cho Chrome
+            options.add_argument("--disable-blink-features=AutomationControlled")
+            options.add_argument("--disable-web-security")
+            options.add_argument("--allow-running-insecure-content")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+
+            try:
+                driver = webdriver.Edge(options=options)
+                print("✅ Khởi tạo Edge driver thành công với session profile")
+                return driver
+            except Exception as e:
+                print(f"❌ Lỗi khi khởi tạo Edge driver: {e}")
+                return None
