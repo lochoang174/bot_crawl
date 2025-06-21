@@ -4,6 +4,10 @@ from scraper.profile_scraper import LinkedInProfileScraper
 from services.driver_management import ChromeDriverManager
 from scraper.data_manager import DataManager
 from typing import List, Dict
+from scraper.search_profile import SearchPeople
+from services.human_behavior import HumanBehaviorSimulator
+import time
+import random
 
 class LinkedInScraperManager:
     """Class chính quản lý toàn bộ quá trình scraping"""
@@ -14,6 +18,7 @@ class LinkedInScraperManager:
         self.authenticator = None
         self.company_scraper = None
         self.profile_scraper = None
+        self.search = None
     
     def initialize_driver(self) -> bool:
         """Khởi tạo driver và các scraper"""
@@ -24,6 +29,7 @@ class LinkedInScraperManager:
         self.authenticator = LinkedInAuthenticator(self.driver)
         self.company_scraper = LinkedInCompanyScraper(self.driver)
         self.profile_scraper = LinkedInProfileScraper(self.driver)
+        self.search = SearchPeople(self.driver)
         return True
     
     def login(self, email: str, password: str) -> bool:
@@ -68,3 +74,145 @@ class LinkedInScraperManager:
             print("🔐 Đang đóng trình duyệt...")
             self.driver.quit()
             self.driver = None
+    def search_people(self, name: str):
+        """
+        Tìm kiếm người với tên được cung cấp và thu thập profile URLs qua nhiều trang
+        """
+        print(f"🔍 Bắt đầu tìm kiếm: {name}")
+        
+        # Bước 1: Nhập tên người cần tìm
+        self.search.input_people_name(name)
+        HumanBehaviorSimulator.random_wait_after_action()
+        
+        # Bước 2: Click tab "People/Người"
+        self.search.click_people_tab()
+        HumanBehaviorSimulator.random_wait_after_action()
+        
+        # Delay và di chuyển chuột tự nhiên
+        print("📍 Mô phỏng hành vi người dùng...")
+        HumanBehaviorSimulator.random_delay(2, 4)
+        
+        # Di chuyển chuột random trên trang
+        self._simulate_natural_mouse_movement()
+        
+        all_profile_urls = []
+        
+        # Bước 3: Thu thập dữ liệu qua 10 trang
+        for page in range(10):
+            print(f"\n📄 Đang xử lý trang {page + 1}/10...")
+            
+            # Scroll xuống để load hết nội dung
+            print("⬇️ Đang scroll xuống trang...")
+            self._scroll_page_naturally()
+            
+            # Thu thập profile URLs từ trang hiện tại
+            print("🎯 Thu thập profile URLs...")
+            page_profiles = self.search.scrapper_a_tag()
+            
+            if page_profiles:
+                all_profile_urls.extend(page_profiles)
+                print(f"✅ Trang {page + 1}: Thu thập được {len(page_profiles)} profiles")
+            else:
+                print(f"⚠️ Trang {page + 1}: Không thu thập được profile nào")
+            
+            # Nếu chưa phải trang cuối, click Next
+            if page < 9:  # Chỉ click Next 9 lần (trang 1->2, 2->3, ..., 9->10)
+                print("➡️ Chuyển sang trang tiếp theo...")
+                
+                # Delay trước khi click Next
+                HumanBehaviorSimulator.random_delay(1.5, 3)
+                
+                # Di chuyển chuột trước khi click
+                self._move_mouse_before_click()
+                
+                # Click nút Next
+                success = self.search.click_next_button()
+                if not success:
+                    print(f"❌ Không thể chuyển sang trang {page + 2}. Dừng thu thập.")
+                    break
+                
+                # Delay sau khi click Next
+                HumanBehaviorSimulator.random_wait_after_action()
+                HumanBehaviorSimulator.random_delay(2, 4)
+        
+        # Bước 4: Tổng kết kết quả
+        print(f"\n🎉 Hoàn thành thu thập!")
+        print(f"📊 Tổng số profile URLs thu thập được: {len(all_profile_urls)}")
+        
+        # Loại bỏ duplicate URLs
+        unique_profiles = self._remove_duplicate_profiles(all_profile_urls)
+        print(f"🔄 Sau khi loại bỏ duplicate: {len(unique_profiles)} profiles unique")
+        
+        # Lưu kết quả vào file (tuỳ chọn)
+        if unique_profiles:
+            DataManager.save_profiles_to_file(unique_profiles, f"search_results_{name.replace(' ', '_')}.json")
+            print(f"💾 Đã lưu kết quả vào file search_results_{name.replace(' ', '_')}.json")
+        
+        return unique_profiles
+
+
+    def _remove_duplicate_profiles(self, profiles):
+        """Loại bỏ profile URLs trùng lặp"""
+        seen_urls = set()
+        unique_profiles = []
+        
+        for profile in profiles:
+            url = profile.get('url', '')
+            if url and url not in seen_urls:
+                seen_urls.add(url)
+                unique_profiles.append(profile)
+        
+        return unique_profiles
+    def _simulate_natural_mouse_movement(self):
+            """Mô phỏng di chuyển chuột tự nhiên trên trang"""
+            try:
+                from selenium.webdriver.common.action_chains import ActionChains
+                
+                # Lấy kích thước window
+                window_size = self.driver.get_window_size()
+                width = window_size['width']
+                height = window_size['height']
+                
+                # Di chuyển chuột đến 3-5 vị trí ngẫu nhiên
+                actions = ActionChains(self.driver)
+                
+                for _ in range(random.randint(3, 5)):
+                    x = random.randint(100, width - 100)
+                    y = random.randint(100, height - 100)
+                    
+                    actions.move_by_offset(x - width//2, y - height//2)
+                    actions.perform()
+                    
+                    time.sleep(random.uniform(0.3, 0.8))
+                    
+                    # Reset để tránh lỗi offset tích lũy
+                    actions = ActionChains(self.driver)
+                    
+            except Exception as e:
+                print(f"⚠️ Không thể mô phỏng di chuyển chuột: {e}")
+
+    def _scroll_page_naturally(self):
+        """Scroll trang một cách tự nhiên"""
+        # Scroll xuống từng đoạn nhỏ
+        for _ in range(random.randint(3, 6)):
+            HumanBehaviorSimulator.human_scroll(self.driver)
+            time.sleep(random.uniform(0.5, 1.2))
+        
+        # Scroll về đầu trang một chút
+        self.driver.execute_script("window.scrollBy(0, -200);")
+        time.sleep(random.uniform(0.3, 0.7))
+
+    def _move_mouse_before_click(self):
+        """Di chuyển chuột trước khi click để tự nhiên hơn"""
+        try:
+            from selenium.webdriver.common.action_chains import ActionChains
+            
+            # Di chuyển chuột một chút
+            actions = ActionChains(self.driver)
+            actions.move_by_offset(random.randint(-50, 50), random.randint(-30, 30))
+            actions.perform()
+            
+            time.sleep(random.uniform(0.2, 0.5))
+            
+        except Exception as e:
+            print(f"⚠️ Không thể di chuyển chuột: {e}")

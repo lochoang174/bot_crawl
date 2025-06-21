@@ -10,3 +10,4 @@ linkedin_profile/
 .venv
 ./venv
 ./linkedin_profile
+.env

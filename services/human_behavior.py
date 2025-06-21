@@ -35,3 +35,12 @@ class HumanBehaviorSimulator:
             if new_height == last_height:
                 break
             last_height = new_height
+    @staticmethod
+    def random_typing_delay():
+        time.sleep(random.uniform(0.1, 0.3))
+
+    @staticmethod
+    def random_wait_after_action():
+        
+        time.sleep(random.uniform(1.0, 2.0))
+    
