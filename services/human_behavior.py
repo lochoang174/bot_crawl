@@ -35,12 +35,53 @@ class HumanBehaviorSimulator:
             if new_height == last_height:
                 break
             last_height = new_height
+            
     @staticmethod
-    def random_typing_delay():
-        time.sleep(random.uniform(0.1, 0.3))
+    def scroll_main_to_bottom(driver):
+        """Scroll xuống cuối thẻ <main> nhiều lần để trigger lazy loading"""
+        try:
+            # Locate the <main> tag
+            main_element = driver.find_element("tag name", "main")
+            last_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
 
+            for i in range(5):
+                driver.execute_script("arguments[0].scrollTo(0, arguments[0].scrollHeight);", main_element)
+                HumanBehaviorSimulator.random_delay(2, 3)
+                new_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
+                if new_height == last_height:
+                    print("No more content to load in <main>.")
+                    break
+                last_height = new_height
+        except Exception as e:
+            print(f"❌ Lỗi khi scroll thẻ <main>: {e}")        
+     
+            
     @staticmethod
-    def random_wait_after_action():
-        
-        time.sleep(random.uniform(1.0, 2.0))
-    
+    def scroll_to_bottom_modal_show_all(driver, modal_element):
+        """Scroll xuống cuối modal để hiển thị tất cả kết quả trong LinkedIn giống như cuộn bằng chuột giữa"""
+        last_height = driver.execute_script("return arguments[0].scrollHeight", modal_element)
+        print(f"Initial scrollHeight: {last_height}")
+
+        for i in range(10):  # Limit the number of scroll attempts
+            # Scroll by small increments to simulate middle mouse scrolling
+            for _ in range(random.randint(5, 10)):  # Randomize the number of small scrolls per iteration
+                scroll_distance = random.randint(50, 100)  # Small scroll increments
+                driver.execute_script(f"arguments[0].scrollBy(0, {scroll_distance});", modal_element)
+                HumanBehaviorSimulator.random_delay(0.1, 0.3)  # Short delay between small scrolls
+            
+            # Add a slightly longer pause to simulate a human reviewing the content
+            HumanBehaviorSimulator.random_delay(0.5, 1.5)
+            
+            # Check the new scroll height
+            new_height = driver.execute_script("return arguments[0].scrollHeight", modal_element)
+            print(f"New scrollHeight after scroll {i+1}: {new_height}")
+            
+            # If no new content is loaded, stop scrolling
+            if new_height == last_height:
+                print("No more content to load.")
+                break
+            
+            last_height = new_height
+
+        # Add a final pause to simulate a human reviewing the content
+        HumanBehaviorSimulator.random_delay(2, 3)
