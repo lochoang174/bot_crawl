@@ -2,13 +2,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from services.human_behavior import HumanBehaviorSimulator 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Callable
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from scraper.data_manager import DataManager
 from repositories.url_repository import UrlRepository
 from models.status_enum import UrlStatus
-
+from proto import bot_pb2
+import random
 class LinkedInMyNetworkScraper:
     def __init__(self, driver):
         self.driver = driver
@@ -37,6 +38,10 @@ class LinkedInMyNetworkScraper:
     def click_show_all_button(self):
         try:
             print("🔍 Đang tìm nút 'Show all'...")
+            yield bot_pb2.BotLog(
+                            bot_id=1,
+                            message="🔍 Đang tìm nút 'Show all'..."
+                        )
             show_all_button = self.wait.until(
                 lambda d: d.find_element(By.XPATH, "//button[.//span[normalize-space()='Show all']]")
             )
@@ -50,33 +55,23 @@ class LinkedInMyNetworkScraper:
             print(f"❌ Lỗi không mong muốn khi click 'Show all': {e}")
 
 
-    def expand_and_collect_all_urls(self) -> List[Dict]:
+    def expand_and_collect_all_urls(self, stop: bool, bot_id: str = ""):
         try:
+            # Log the start of the process
+            yield bot_pb2.BotLog(
+                bot_id=bot_id,
+                message="🌐 Truy cập trang kết nối của bạn..."
+            )
             print("🌐 Truy cập trang kết nối của bạn...")
             self.driver.get("https://www.linkedin.com/mynetwork")
             HumanBehaviorSimulator.random_delay(5, 8)
 
-            # Step 1: Scroll until "More suggestions for you" is visible
-            print("🔍 Đang cuộn trang để tìm 'More suggestions for you'...")
-            max_scroll_attempts = 10
-            scroll_attempts = 0
-
-            while scroll_attempts < max_scroll_attempts:
-                try:
-                    h2_element = self.driver.find_element(By.XPATH, "//h2[normalize-space()='More suggestions for you']")
-                    if h2_element.is_displayed():
-                        print("✅ Đã tìm thấy 'More suggestions cho bạn'. Dừng cuộn.")
-                        break
-                except NoSuchElementException:
-                    pass
-
+             # Step 1: Scroll a fixed number of times (5 to 7)
+            scroll_attempts = random.randint(5, 7)
+            print(f"🔍 Đang cuộn trang {scroll_attempts} lần...")
+            for _ in range(scroll_attempts):
                 HumanBehaviorSimulator.scroll_main_to_bottom(self.driver)
                 HumanBehaviorSimulator.random_delay(1, 2)
-                scroll_attempts += 1
-
-                if scroll_attempts >= max_scroll_attempts:
-                    print("❌ Không tìm thấy 'More suggestions cho bạn' sau khi cuộn tối đa số lần.")
-                    return []
 
             # Step 2: Save all "Show all" buttons into a dictionary
             print("🔍 Đang tìm tất cả các nút 'Show all'...")
@@ -90,6 +85,10 @@ class LinkedInMyNetworkScraper:
 
             # Step 3: Iterate through each "Show all" button and process it
             for index, button in buttons_dict.items():
+                if stop:  # Check if stop is True
+                    print("⏹️ Dừng quá trình xử lý các nút 'Show all' do yêu cầu dừng.")
+                    return
+
                 try:
                     print(f"\n🚀 Đang xử lý nút 'Show all' thứ {index + 1}...")
                     self.driver.execute_script("arguments[0].scrollIntoView();", button)
@@ -103,6 +102,10 @@ class LinkedInMyNetworkScraper:
                     same_count_duration = 0
 
                     while True:
+                        if stop:  # Check if stop is True
+                            print("⏹️ Dừng quá trình cuộn modal do yêu cầu dừng.")
+                            return
+
                         if not self.scroll_to_show_more(timeout=7):
                             print("❌ Không thể cuộn thêm nữa.")
                             break
@@ -112,15 +115,18 @@ class LinkedInMyNetworkScraper:
                         # Collect profile URLs and save them to MongoDB
                         new_profile_urls = self._collect_profile_urls()
                         for profile in new_profile_urls:
-                            self.url_repository.create(profile['url'], status=UrlStatus.PENDING, vm=vm_counter)
-                            print(f"✅ Đã lưu profile URL với vm={vm_counter} vào MongoDB.")
+                            
+                            created_profile = self.url_repository.create(profile['url'], status=UrlStatus.PENDING, bot_id=vm_counter)
+                            if created_profile:
+                                print(f"✅ Đã lưu profile URL {profile['url']} vào MongoDB.")
+                            
                             # Increment vm_counter and reset if it exceeds max_vm
                             vm_counter = vm_counter + 1 if vm_counter < max_vm else 1
 
                         # Check if profile count remains the same
                         if len(new_profile_urls) == last_profile_count:
                             same_count_duration += 1
-                            if same_count_duration >= 2:
+                            if same_count_duration == 1:
                                 print("⏳ Không có profile mới. Đóng modal và tiếp tục.")
                                 break
                         else:
@@ -143,21 +149,28 @@ class LinkedInMyNetworkScraper:
             return []
 
         except Exception as e:
+            yield bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"❌ Lỗi trong quá trình mở rộng danh sách: {e}"
+            )
             print(f"❌ Lỗi trong quá trình mở rộng danh sách: {e}")
             return []
 
     def _collect_profile_urls(self) -> List[Dict]:
         try:
             profile_urls = []
-            grid_items = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#root > dialog > div > div > div > div > section > div > div > div"))
-            )
-            a_tags = grid_items.find_elements(By.TAG_NAME, "a")
+
+            # Directly find the grid items without waiting
+            grid_items = self.driver.find_element(By.CSS_SELECTOR, "#root > dialog > div > div > div > div > section > div > div > div")
+            a_tags = grid_items.find_elements(By.TAG_NAME, "a")  # Find all <a> tags immediately
+
+            # Collect URLs from the <a> tags
             for a in a_tags:
                 profile_url = a.get_attribute("href")
                 if profile_url:
                     profile_urls.append({"url": profile_url})
 
+            # Remove duplicates by converting to a dictionary and back to a list
             profile_urls = list({profile['url']: profile for profile in profile_urls}.values())
             print(f"🔍 Tìm thấy tổng cộng {len(profile_urls)} profile URLs.")
             return profile_urls

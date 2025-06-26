@@ -65,7 +65,7 @@ class HumanBehaviorSimulator:
         for i in range(10):  # Limit the number of scroll attempts
             # Scroll by small increments to simulate middle mouse scrolling
             for _ in range(random.randint(5, 10)):  # Randomize the number of small scrolls per iteration
-                scroll_distance = random.randint(50, 100)  # Small scroll increments
+                scroll_distance = random.randint(100,200)  # Small scroll increments
                 driver.execute_script(f"arguments[0].scrollBy(0, {scroll_distance});", modal_element)
                 HumanBehaviorSimulator.random_delay(0.1, 0.3)  # Short delay between small scrolls
             

@@ -22,5 +22,7 @@ message BotLog {
 
 // gRPC Service
 service BotService {
-  rpc StreamBotLogs(stream BotCommand) returns (stream BotLog);
+  rpc StreamBotCrawlUrl(stream BotCommand) returns (stream BotLog);
+  rpc StreamBotCrawlDetail(stream BotCommand) returns (stream BotLog);
+
 }
