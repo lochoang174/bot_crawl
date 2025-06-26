@@ -29,6 +29,10 @@ class LinkedInScraperManager:
         if self.my_connect_scraper:
             self.my_connect_scraper.stop = True
         print(f"🔴 Trạng thái dừng đã được thiết lập: {self.stop}") 
+
+    def is_stopped(self) -> bool:
+        """Kiểm tra trạng thái dừng"""
+        return self.stop
         
     def initialize_driver(self) -> bool:
         """Khởi tạo driver và các scraper"""
