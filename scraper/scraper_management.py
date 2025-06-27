@@ -14,7 +14,7 @@ class LinkedInScraperManager:
     """Class chính quản lý toàn bộ quá trình scraping"""
     
     def __init__(self, profile_name: str = "linkedin_profile", id: str = None):
-        self.driver_manager = ChromeDriverManager(profile_name)
+        self.driver_manager = ChromeDriverManager(id,profile_name)
         self.driver = None
         self.authenticator = None
         self.company_scraper = None
@@ -22,7 +22,7 @@ class LinkedInScraperManager:
         self.my_connect_scraper = None
         self.stop = False
         self.id = id
-        
+     
     def set_stop(self):
         """Thiết lập trạng thái dừng"""
         self.stop = True

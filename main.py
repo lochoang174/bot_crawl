@@ -7,7 +7,7 @@ from repositories.profile_repository import ProfileRepository
 
 def test_multiple_accounts():
     """Test với nhiều tài khoản"""
-    ACCOUNT_LIST = [
+    ACCOUNT_LIST = [ 
         {
             "LINKEDIN_EMAIL": "ClarieBarbourclf38421z@cwhats.us",
             "LINKEDIN_PASSWORD": "Truong3979"

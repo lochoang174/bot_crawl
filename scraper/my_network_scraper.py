@@ -102,6 +102,7 @@ class LinkedInMyNetworkScraper:
                     same_count_duration = 0
 
                     while True:
+                        print("Stop: "+stop)
                         if stop:  # Check if stop is True
                             print("⏹️ Dừng quá trình cuộn modal do yêu cầu dừng.")
                             return

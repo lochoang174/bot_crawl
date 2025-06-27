@@ -81,6 +81,7 @@ def _run_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: LinkedInScra
         # Cleanup sẽ được gọi khi bot bị STOP hoặc khi server tắt
         # log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="Scraper task finished.")) 
         print(f"[{bot_id}] Scraper task thread ended (driver might still be active).")
+        scraper.cleanup()
         # Đánh dấu bot là đã dừng trong active_bots để biết trạng thái
         if bot_id in active_bots:
             active_bots[bot_id]["status"] = "STOPPED" # Hoặc "COMPLETED" nếu nó hoàn thành xong
@@ -108,7 +109,7 @@ class BotServiceServicer(bot_pb2_grpc.BotServiceServicer):
                             # Bot đã tồn tại và đã dừng, có thể khởi động lại
                             scraper = active_bots[bot_id]["scraper"]
                             # Reset stop event để cho phép nó chạy lại
-                            scraper._stop_event.clear() 
+                            scraper.cleanup() 
                             log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"🔄 Resuming bot {bot_id}..."))
                         else:
                             # Bot mới hoàn toàn
