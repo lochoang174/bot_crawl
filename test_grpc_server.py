@@ -193,8 +193,12 @@ class BotServiceServicer(bot_pb2_grpc.BotServiceServicer):
         # Đảm bảo luồng command_handler kết thúc trước khi hàm StreamBotCrawlUrl trả về
         command_thread.join()
         print(f"StreamBotCrawlUrl for bot_id={bot_id if bot_id else 'unknown'} completed.")
-
-
+    def StreamBotCrawlDetail(self, request_iterator, context):
+        for command in request_iterator:
+                bot_id = command.bot_id
+                cmd_type = command.type
+                print(bot_id)
+                print(cmd_type)
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     bot_pb2_grpc.add_BotServiceServicer_to_server(BotServiceServicer(), server)
