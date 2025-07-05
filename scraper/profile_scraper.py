@@ -16,7 +16,8 @@ from repositories.profile_repository import ProfileRepository
 class LinkedInProfileScraper:
     """Scraper cho thông tin profile cá nhân"""
     
-    def __init__(self, driver):
+    def __init__(self, driver, manager):
+        self.manager = manager  # Placeholder for manager instance
         self.driver = driver
         self.wait = WebDriverWait(driver, 20)
     
@@ -24,16 +25,25 @@ class LinkedInProfileScraper:
         """
         Trích xuất thông tin chi tiết từ một profile và lưu vào database.
         """
-        # print(f"\n🔍 Scraping: {profile_url}")
         profile_data = {'url': profile_url}
 
         try:
+            # Check for stop signal before starting
+            if self.manager.is_stopped():
+                print(f"[{self.manager.id}] ⏹️ Halting profile detail scraping due to stop signal.")
+                return profile_data
+
             # Update status to 'processing'
             url_repo.update_status_to_processing(profile_url)
 
             # Load the profile page
             self.driver.get(profile_url)
             HumanBehaviorSimulator.random_delay(5, 8)
+
+            # Check for stop signal after loading the page
+            if self.manager.is_stopped():
+                print(f"[{self.manager.id}] ⏹️ Halting profile detail scraping after loading page.")
+                return profile_data
 
             # Extract profile details
             main_container = self.wait.until(
@@ -44,7 +54,7 @@ class LinkedInProfileScraper:
             profile_data['location'] = self._get_element_text(main_container, By.CSS_SELECTOR, "span.text-body-small.inline.t-black--light.break-words")
             profile_data['current_company'] = self._get_element_text(main_container, By.XPATH, "//button[starts-with(@aria-label, 'Current company:')]//span[contains(@class, 'hoverable-link-text')]")
             profile_data['education'] = self._get_element_text(main_container, By.XPATH, "//button[starts-with(@aria-label, 'Education:')]//span[contains(@class, 'hoverable-link-text')]")
-            
+                
             # Extract avatar URL
             avatar_img = self.driver.find_element(By.CSS_SELECTOR, "img.pv-top-card-profile-picture__image--show")
             profile_data['avatar_url'] = avatar_img.get_attribute("src")
@@ -107,19 +117,23 @@ class LinkedInProfileScraper:
         total_profiles = len(profiles_list)
         
         for i, profile_url in enumerate(profiles_list):
+            # Check for stop signal before processing each profile
+            if self.manager.is_stopped():
+                print(f"[{self.manager.id}] ⏹️ Halting profile scraping due to stop signal.")
+                url_repo.update_status_to_pending(profile_url)  # Ensure status is updated
+                break
+
             print(f"\n{'='*20} [ Đang xử lý profile {i+1}/{total_profiles} ] {'='*20}")
             
             # Scrape profile details
-            # detailed_data = self.scrape_profile_details(profile_url, url_repo, profile_repo)
             self.scrape_profile_details(profile_url, url_repo, profile_repo)
             
-            # all_profiles_data.append(detailed_data)
-            
-            # Lưu backup sau mỗi 10 profiles
-            # if (i + 1) % 10 == 0 and i + 1 < total_profiles:
-            #     print(f"\n--- Tự động lưu tiến trình sau {i+1} profiles ---")
-            #     DataManager.save_profiles_to_file(all_profiles_data, "linkedin_detailed_profiles_backup.json")
-            #break when at last profile
+            # Check for stop signal after processing each profile
+            if self.manager.is_stopped():
+                print(f"[{self.manager.id}] ⏹️ Halting profile scraping after processing profile {i+1}.")
+                break
+
+            # Break when at last profile
             if i + 1 == total_profiles:
                 print(f"✅ Đã hoàn thành việc scrape tất cả {total_profiles} profiles.")
                 break

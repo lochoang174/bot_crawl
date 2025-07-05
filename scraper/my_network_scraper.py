@@ -11,9 +11,9 @@ from models.status_enum import UrlStatus
 from proto import bot_pb2
 import random
 class LinkedInMyNetworkScraper:
-    def __init__(self, driver):
+    def __init__(self, driver, manager):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 20)
+        self.manager = manager # <-- This gives access to is_stopped()
         self.url_repository = UrlRepository()  # Initialize the UrlRepository
         
     
@@ -55,109 +55,119 @@ class LinkedInMyNetworkScraper:
             print(f"❌ Lỗi không mong muốn khi click 'Show all': {e}")
 
 
-    def expand_and_collect_all_urls(self, stop: bool, bot_id: str = ""):
-        try:
-            # Log the start of the process
-            yield bot_pb2.BotLog(
-                bot_id=bot_id,
-                message="🌐 Truy cập trang kết nối của bạn..."
-            )
-            print("🌐 Truy cập trang kết nối của bạn...")
-            self.driver.get("https://www.linkedin.com/mynetwork")
-            HumanBehaviorSimulator.random_delay(5, 8)
+    def expand_and_collect_all_urls(self, isStop: bool) -> list[str]:
+        # --- 1. INITIALIZE A LIST TO HOLD URLS ---
+        # The function will now collect URLs here and return this list.
+        collected_urls = []
 
-             # Step 1: Scroll a fixed number of times (5 to 7)
+        try:
+            print(f"[{self.manager.id}] 🌐 Navigating to 'My Network' page...")
+            self.driver.get("https://www.linkedin.com/mynetwork/")
+            HumanBehaviorSimulator.random_delay(5, 8)
+            
+            # --- 2. USE THE CORRECT STOP CHECK ---
+            # Check the manager's stop event before starting heavy work.
+            if self.manager.is_stopped(): 
+                print(f"[{self.manager.id}] ⏹️ Halting before starting URL collection due to stop signal.")
+                return collected_urls
+
+            # Step 1: Scroll the main page to load content
             scroll_attempts = random.randint(5, 7)
-            print(f"🔍 Đang cuộn trang {scroll_attempts} lần...")
-            for _ in range(scroll_attempts):
+            print(f"[{self.manager.id}] 🔍 Scrolling main page {scroll_attempts} times...")
+            for i in range(scroll_attempts):
+                if self.manager.is_stopped(): return collected_urls # Check in loops
+                print(f"[{self.manager.id}] ...scroll {i+1}/{scroll_attempts}")
                 HumanBehaviorSimulator.scroll_main_to_bottom(self.driver)
                 HumanBehaviorSimulator.random_delay(1, 2)
 
-            # Step 2: Save all "Show all" buttons into a dictionary
-            print("🔍 Đang tìm tất cả các nút 'Show all'...")
+            # Step 2: Find all "Show all" buttons
+            print(f"[{self.manager.id}] 🔍 Finding all 'Show all' buttons...")
             show_all_buttons = self.driver.find_elements(By.XPATH, "//button[.//span[normalize-space()='Show all']]")
-            buttons_dict = {index: button for index, button in enumerate(show_all_buttons)}
-            print(f"✅ Đã lưu {len(buttons_dict)} nút 'Show all' vào dictionary.")
+            print(f"[{self.manager.id}] ✅ Found {len(show_all_buttons)} 'Show all' buttons.")
 
-            # Initialize the vm counter
-            vm_counter = 1
-            max_vm = 4
-
-            # Step 3: Iterate through each "Show all" button and process it
-            for index, button in buttons_dict.items():
-                if stop:  # Check if stop is True
-                    print("⏹️ Dừng quá trình xử lý các nút 'Show all' do yêu cầu dừng.")
-                    return
+            bot_counter = 1
+            max_bot_counter = 4
+            # Step 3: Iterate through each button
+            for index, button in enumerate(show_all_buttons):
+                # --- 2. USE THE CORRECT STOP CHECK (again) ---
+                if self.manager.is_stopped():
+                    print(f"[{self.manager.id}] ⏹️ Halting before processing button {index + 1} due to stop signal.")
+                    return collected_urls
 
                 try:
-                    print(f"\n🚀 Đang xử lý nút 'Show all' thứ {index + 1}...")
-                    self.driver.execute_script("arguments[0].scrollIntoView();", button)
+                    print(f"\n[{self.manager.id}] 🚀 Processing 'Show all' button #{index + 1}...")
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
                     HumanBehaviorSimulator.random_delay(1, 2)
                     button.click()
-                    print("✅ Đã click nút 'Show all'.")
+                    print(f"[{self.manager.id}] ✅ Clicked 'Show all' button.")
 
-                    # Scroll the modal and collect profile URLs
-                    scroll_count = 0
-                    last_profile_count = 0
-                    same_count_duration = 0
-
-                    while True:
-                        print("Stop: "+stop)
-                        if stop:  # Check if stop is True
-                            print("⏹️ Dừng quá trình cuộn modal do yêu cầu dừng.")
-                            return
-
+                    # This is the inner loop for scrolling the modal
+                    while not self.manager.is_stopped():
+                        # --- 3. SCROLL AND COLLECT ---
+                        # The scroll_to_show_more and _collect_profile_urls should also be in this class
                         if not self.scroll_to_show_more(timeout=7):
-                            print("❌ Không thể cuộn thêm nữa.")
+                            print(f"[{self.manager.id}] 🏁 Reached the end of the modal list.")
+                            break # Exit the modal scroll loop
+
+                        # --- 4. COLLECT URLS, DON'T SAVE ---
+                        # This helper now just returns URLs from the current view
+                        new_urls_found = self._collect_profile_urls()
+                        if not new_urls_found:
+                            print(f"[{self.manager.id}] ❌ No new profile URLs found in this modal.")
                             break
-                        scroll_count += 1
-                        print(f"👍 Đã scroll lần thứ {scroll_count}.")
-
-                        # Collect profile URLs and save them to MongoDB
-                        new_profile_urls = self._collect_profile_urls()
-                        for profile in new_profile_urls:
-                            
-                            created_profile = self.url_repository.create(profile['url'], status=UrlStatus.PENDING, bot_id=vm_counter)
+                        
+                        # Add only new URLs to our main list
+                        newly_added_count = 0
+                       
+                        for url in new_urls_found:
+                            print("🔗 Đang xử lý URL:", url)
+                            created_profile = self.url_repository.create(url, status=UrlStatus.PENDING, bot_id=bot_counter)  
                             if created_profile:
-                                print(f"✅ Đã lưu profile URL {profile['url']} vào MongoDB.")
+                                print(f"✅ Đã lưu profile URL {url} vào MongoDB.")
                             
-                            # Increment vm_counter and reset if it exceeds max_vm
-                            vm_counter = vm_counter + 1 if vm_counter < max_vm else 1
+                            bot_counter = bot_counter + 1 if bot_counter < max_bot_counter else 1
 
-                        # Check if profile count remains the same
-                        if len(new_profile_urls) == last_profile_count:
-                            same_count_duration += 1
-                            if same_count_duration == 1:
-                                print("⏳ Không có profile mới. Đóng modal và tiếp tục.")
-                                break
+                            if url not in collected_urls:
+                                collected_urls.append(url)
+                                
+                                newly_added_count += 1
+                        
+                        if newly_added_count == 0:
+                            print(f"[{self.manager.id}] ⏳ No new profiles found in this scroll. Closing modal.")
+                            break
                         else:
-                            same_count_duration = 0
-                            last_profile_count = len(new_profile_urls)
+                             print(f"[{self.manager.id}] 👍 Found {newly_added_count} new profiles. Total collected: {len(collected_urls)}")
+
 
                     # Close the modal
+                    print(f"[{self.manager.id}] 🚪 Closing modal...")
                     close_button = self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']")
-                    self.driver.execute_script("arguments[0].scrollIntoView();", close_button)
-                    HumanBehaviorSimulator.random_delay(1, 2)
-                    close_button.click()
-                    print("✅ Đã đóng modal.")
+                    self.driver.execute_script("arguments[0].click();", close_button)
                     HumanBehaviorSimulator.random_delay(2, 3)
 
                 except Exception as e:
-                    print(f"❌ Lỗi khi xử lý nút 'Show all' thứ {index + 1}: {e}")
+                    print(f"[{self.manager.id}] ❌ Error processing 'Show all' button #{index + 1}: {e}")
+                    # Try to close a modal if it's stuck open
+                    try:
+                        self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']").click()
+                    except:
+                        pass # Ignore if no close button is found
                     continue
 
-            print("✅ Hoàn thành việc xử lý tất cả các nút 'Show all'.")
-            return []
+            print(f"[{self.manager.id}] ✅ Finished processing all 'Show all' buttons.")
+            
+            # --- 5. RETURN THE COLLECTED LIST ---
+            # The function now successfully returns the list of URLs for the next step.
+            return collected_urls
 
         except Exception as e:
-            yield bot_pb2.BotLog(
-                bot_id=bot_id,
-                message=f"❌ Lỗi trong quá trình mở rộng danh sách: {e}"
-            )
-            print(f"❌ Lỗi trong quá trình mở rộng danh sách: {e}")
-            return []
-
-    def _collect_profile_urls(self) -> List[Dict]:
+            print(f"[{self.manager.id}] ❌ A critical error occurred in expand_and_collect_all_urls: {e}")
+            return collected_urls
+        
+    def _collect_profile_urls(self) -> List[str]:
+        """
+        Collect profile URLs from the modal and return them as a list of strings.
+        """
         try:
             profile_urls = []
 
@@ -169,10 +179,10 @@ class LinkedInMyNetworkScraper:
             for a in a_tags:
                 profile_url = a.get_attribute("href")
                 if profile_url:
-                    profile_urls.append({"url": profile_url})
+                    profile_urls.append(profile_url)  # Append only the URL string
 
-            # Remove duplicates by converting to a dictionary and back to a list
-            profile_urls = list({profile['url']: profile for profile in profile_urls}.values())
+            # Remove duplicates by converting to a set and back to a list
+            profile_urls = list(set(profile_urls))
             print(f"🔍 Tìm thấy tổng cộng {len(profile_urls)} profile URLs.")
             return profile_urls
 
