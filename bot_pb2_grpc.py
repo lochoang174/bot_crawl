@@ -75,7 +75,7 @@ def add_BotServiceServicer_to_server(servicer, server):
                     servicer.StreamBotCrawlDetail,
                     request_deserializer=bot__pb2.BotCommand.FromString,
                     response_serializer=bot__pb2.BotLog.SerializeToString,
-            ),  
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'bot.BotService', rpc_method_handlers)
