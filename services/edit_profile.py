@@ -45,17 +45,17 @@ class LinkedInProfileViewer:
 
             print("🔍 Đang tìm nút 'View Profile'...")
             # Step 2: Wait for the View Profile link
-            view_profile_button = self.wait.until(
-            EC.element_to_be_clickable((
-                By.XPATH,
-                "//a[contains(@class, 'global-nav__me-nav-action') and contains(., 'View Profile')]"
-            ))
-        )
+            links = self.driver.find_elements(By.XPATH, "//a[contains(@href, '/in/')]")
+            print(f"🔍 Tìm thấy {len(links)} liên kết có '/in/':")
+            for i, link in enumerate(links, 1):
+                print(f"{i}: {link.text} → {link.get_attribute('href')}")
 
-            # Step 3: Scroll to and click it
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", view_profile_button)
-            view_profile_button.click()
-            print("✅ Đã click nút 'View Profile'.")
+            for link in links:
+                if "View Profile" in link.text:
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", link)
+                    link.click()
+                    print("✅ Đã click nút 'View Profile'.")
+                    return
         except TimeoutException:
             print("❌ Không tìm thấy hoặc không thể click nút 'View Profile' trong thời gian chờ.")
         except Exception as e:
@@ -68,13 +68,18 @@ class LinkedInProfileViewer:
         try:
             print("🔍 Đang tìm nút 'Edit intro'...")
 
-            edit_profile_button = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Edit intro']"))
-        )
+            xpath = "//button[@aria-label='Edit intro']"
 
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", edit_profile_button)
-  
-            edit_profile_button.click()
+
+            # Wait for the element to appear in DOM
+            edit_intro_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", edit_intro_button)
+
+            # Click the button
+            edit_intro_button.click()
+
+          
+            
             print("✅ Đã click nút 'Edit intro'.")
         except TimeoutException:
             print("❌ Không tìm thấy hoặc không thể click nút 'Edit intro' trong thời gian chờ.")

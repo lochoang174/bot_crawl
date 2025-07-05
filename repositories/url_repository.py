@@ -53,13 +53,17 @@ class UrlRepository:
         :return: A list of URLs with the specified bot_id and status 'pending'.
         """
         try:
-            # Query the database for documents with the specified bot_id and status 'pending'
-            results = self.collection.find({"bot_id": bot_id, "status": UrlStatus.PENDING})
-            
-            # Extract and return the URLs from the results
+            # Make sure UrlStatus.PENDING == "pending"
+            results_cursor = self.collection.find({"bot_id": 1, "status": "pending"})
+            results = list(results_cursor)  # Convert cursor to reusable list
+
+            for doc in results:
+                print(doc)
+
             urls = [doc["url"] for doc in results if "url" in doc]
-            print(f"✅ Tìm thấy {len(urls)} URLs với bot_id = {bot_id} và status = 'pending'.")
+            print(f"✅ Tìm thấy {len(urls)} URLs với bot_id = 1 và status = 'pending'.")
             return urls
+
         except Exception as e:
             print(f"❌ Lỗi khi truy vấn URLs với bot_id = {bot_id} và status = 'pending': {e}")
             return []
@@ -69,7 +73,7 @@ class UrlRepository:
         Update the status of a URL to 'processing'.
         """
         try:
-            result = self.collection.update_one({"url": url}, {"$set": {"status": "processing"}})
+            result = self.collection.update_one({"url": url}, {"$set": {"status": UrlStatus.PROCESSING}})
             if result.modified_count > 0:
                 print(f"✅ Đã cập nhật status của URL '{url}' thành 'processing'.")
             else:
@@ -82,13 +86,26 @@ class UrlRepository:
         Update the status of a URL to 'done'.
         """
         try:
-            result = self.collection.update_one({"url": url}, {"$set": {"status": "done"}})
+            result = self.collection.update_one({"url": url}, {"$set": {"status": UrlStatus.DONE}})
             if result.modified_count > 0:
                 print(f"✅ Đã cập nhật status của URL '{url}' thành 'done'.")
             else:
                 print(f"⚠️ Không tìm thấy URL '{url}' để cập nhật status thành 'done'.")
         except Exception as e:
             print(f"❌ Lỗi khi cập nhật status của URL '{url}' thành 'done': {e}")
+            
+    def update_status_to_pending(self, url: str):
+        """
+        Update the status of a URL to 'pending'.
+        """
+        try:
+            result = self.collection.update_one({"url": url}, {"$set": {"status": UrlStatus.PENDING}})
+            if result.modified_count > 0:
+                print(f"✅ Đã cập nhật status của URL '{url}' thành 'pending'.")
+            else:
+                print(f"⚠️ Không tìm thấy URL '{url}' để cập nhật status thành 'pending'.")
+        except Exception as e:
+            print(f"❌ Lỗi khi cập nhật status của URL '{url}' thành 'pending': {e}")
 
     def update_status_to_pending_if_not_in_profiles(self, profile_repo: ProfileRepository):
         """
