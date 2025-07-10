@@ -46,7 +46,10 @@ class LinkedInScraperManager:
     def initialize_driver(self) -> bool:
         """Khởi tạo driver và các scraper"""
         self.driver = self.driver_manager.create_edge_driver_with_session()
-        
+        self.driver.execute_script("window.open('https://bot.sannysoft.com', '_blank');")
+
+            # ✅ Chuyển sang tab mới
+        self.driver.switch_to.window(self.driver.window_handles[-1])
         if not self.driver:
             return False
         
@@ -133,7 +136,7 @@ class LinkedInScraperManager:
         # print(f"[{self.id}] 🎉 Finished scraping {len(detailed_profiles)} detailed profiles.")
         # return detailed_profiles
         
-    def scrape_profile_details(self, bot_id: str) -> Dict:
+    def scrape_profile_details(self, bot_id: int) -> Dict:
         """Scrapes detailed profile information from the given profile URL."""
         if self.is_stopped():
             print(f"[{bot_id}] 🛑 Process stopped before scraping profile details.")

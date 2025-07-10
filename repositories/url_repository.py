@@ -54,14 +54,24 @@ class UrlRepository:
         """
         try:
             # Make sure UrlStatus.PENDING == "pending"
-            results_cursor = self.collection.find({"bot_id": 1, "status": "pending"})
+            # check bot_id type if str parse to int
+            if isinstance(bot_id, str):
+                try:
+                    bot_id = int(bot_id)
+                except ValueError:
+                    print(f"❌ bot_id '{bot_id}' không thể chuyển đổi sang kiểu int.")
+          
+            results_cursor = self.collection.find({"bot_id": bot_id, "status": "pending"})
             results = list(results_cursor)  # Convert cursor to reusable list
+            
+            print(f"🔍 Đã tìm thấy {len(results)} URLs với bot_id = {bot_id} và status = 'pending'.")
+            
 
             for doc in results:
-                print(doc)
+                print("eqjd",doc)
 
             urls = [doc["url"] for doc in results if "url" in doc]
-            print(f"✅ Tìm thấy {len(urls)} URLs với bot_id = 1 và status = 'pending'.")
+            print(f"✅ Tìm thấy {len(urls)} URLs với bot_id = {bot_id} và status = 'pending'.")
             return urls
 
         except Exception as e:

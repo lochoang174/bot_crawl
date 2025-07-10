@@ -89,6 +89,8 @@ class ChromeDriverManager:
 
         try:
             driver = webdriver.Edge(options=options)
+            # ✅ Mở một tab mới bằng JavaScript
+            
             print(f"[{self.bot_id}] ✅ Khởi tạo Edge driver thành công với session")
             return driver
         except Exception as e:

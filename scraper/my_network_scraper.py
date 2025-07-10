@@ -63,6 +63,7 @@ class LinkedInMyNetworkScraper:
         try:
             print(f"[{self.manager.id}] 🌐 Navigating to 'My Network' page...")
             self.driver.get("https://www.linkedin.com/mynetwork/")
+            
             HumanBehaviorSimulator.random_delay(5, 8)
             
             # --- 2. USE THE CORRECT STOP CHECK ---
@@ -82,7 +83,7 @@ class LinkedInMyNetworkScraper:
 
             # Step 2: Find all "Show all" buttons
             print(f"[{self.manager.id}] 🔍 Finding all 'Show all' buttons...")
-            show_all_buttons = self.driver.find_elements(By.XPATH, "//button[.//span[normalize-space()='Show all']]")
+            show_all_buttons = self.driver.find_elements(By.XPATH, "//button[.//span[normalize-space()='Show all' or normalize-space()='Hiển thị tất cả']]")
             print(f"[{self.manager.id}] ✅ Found {len(show_all_buttons)} 'Show all' buttons.")
 
             bot_counter = 1
@@ -189,3 +190,87 @@ class LinkedInMyNetworkScraper:
         except Exception as e:
             print(f"❌ Lỗi khi thu thập danh sách profile cuối cùng: {e}")
             return []
+
+
+    def click_and_visit_all_profiles(self, isStop: bool) -> int:
+        """
+        Clicks each 'Show all' button, opens each collected profile URL in a new tab, 
+        counts the visit, and closes the tab.
+        
+        Returns:
+            int: Total number of profiles visited.
+        """
+        total_visited = 0
+
+        try:
+            print(f"[{self.manager.id}] 🌐 Navigating to 'My Network' page...")
+            self.driver.get("https://www.linkedin.com/mynetwork/")
+            HumanBehaviorSimulator.random_delay(5, 8)
+
+            if self.manager.is_stopped():
+                print(f"[{self.manager.id}] ⏹️ Stopped before starting.")
+                return total_visited
+
+            # Scroll main page
+            scroll_attempts = random.randint(5, 7)
+            for i in range(scroll_attempts):
+                if self.manager.is_stopped(): return total_visited
+                print(f"[{self.manager.id}] ...scroll {i+1}/{scroll_attempts}")
+                HumanBehaviorSimulator.scroll_main_to_bottom(self.driver)
+                HumanBehaviorSimulator.random_delay(1, 2)
+
+            # Find all "Show all" buttons
+            show_all_buttons = self.driver.find_elements(By.XPATH, "//button[.//span[normalize-space()='Show all' or normalize-space()='Hiển thị tất cả']]")
+            print(f"[{self.manager.id}] ✅ Found {len(show_all_buttons)} 'Show all' buttons.")
+
+            for index, button in enumerate(show_all_buttons):
+                if self.manager.is_stopped(): return total_visited
+                try:
+                    print(f"\n[{self.manager.id}] 🚀 Processing 'Show all' button #{index + 1}...")
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
+                    HumanBehaviorSimulator.random_delay(1, 2)
+                    button.click()
+                    HumanBehaviorSimulator.random_delay(2, 4)
+
+                    # Scroll modal and collect URLs
+                    while not self.manager.is_stopped():
+                        if not self.scroll_to_show_more(timeout=7):
+                            break
+                        profile_urls = self._collect_profile_urls()
+                        if not profile_urls:
+                            break
+
+                        for url in profile_urls:
+                            if self.manager.is_stopped(): return total_visited
+                            print(f"🔗 Visiting profile URL: {url}")
+                            self.driver.execute_script("window.open(arguments[0], '_blank');", url)
+                            self.driver.switch_to.window(self.driver.window_handles[-1])  # Switch to new tab
+                            HumanBehaviorSimulator.random_delay(3, 5)
+                            total_visited += 1
+                            print(f"✅ Visited {total_visited} profiles so far.")
+                            self.driver.close()  # Close the tab
+                            self.driver.switch_to.window(self.driver.window_handles[0])  # Back to main tab
+                            HumanBehaviorSimulator.random_delay(1, 2)
+
+                    # Close modal
+                    try:
+                        close_button = self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']")
+                        self.driver.execute_script("arguments[0].click();", close_button)
+                        HumanBehaviorSimulator.random_delay(2, 3)
+                    except Exception as e:
+                        print(f"[{self.manager.id}] ⚠️ Could not close modal: {e}")
+
+                except Exception as e:
+                    print(f"[{self.manager.id}] ❌ Error with 'Show all' button #{index + 1}: {e}")
+                    try:
+                        self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']").click()
+                    except:
+                        pass
+                    continue
+
+            print(f"[{self.manager.id}] ✅ Done visiting profiles. Total visited: {total_visited}")
+            return total_visited
+
+        except Exception as e:
+            print(f"[{self.manager.id}] ❌ Critical error in click_and_visit_all_profiles: {e}")
+            return total_visited

@@ -85,7 +85,7 @@ def _run_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: LinkedInScra
             del active_bots[bot_id]
             print(f"[{bot_id}] Bot removed from active list.")
 
-def _run_detail_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: LinkedInScraperManager):
+def _run_detail_scraper_task(bot_id: int, log_queue: queue.Queue, scraper: LinkedInScraperManager):
     """
     The detailed scraping task that runs in a separate thread.
     It now checks for the stop signal more frequently.

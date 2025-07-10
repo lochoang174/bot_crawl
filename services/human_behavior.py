@@ -25,16 +25,15 @@ class HumanBehaviorSimulator:
         time.sleep(scroll_pause_time)
     
     @staticmethod
-    def scroll_to_bottom(driver):
-        """Scroll xuống cuối trang nhiều lần để trigger lazy loading"""
-        last_height = driver.execute_script("return document.body.scrollHeight")
-        for i in range(5):
+    def scroll_to_bottom(driver, num_scrolls: int = 3, scroll_delay_min: float = 1, scroll_delay_max: float = 3):
+        """Simulates human-like scrolling to the bottom of the page."""
+        for _ in range(num_scrolls):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            HumanBehaviorSimulator.random_delay(2, 3)
-            new_height = driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
-                break
-            last_height = new_height
+            HumanBehaviorSimulator.random_delay(scroll_delay_min, scroll_delay_max)
+            # Optional: Scroll up slightly sometimes
+            if random.random() < 0.2: # 20% chance to scroll up a bit
+                driver.execute_script(f"window.scrollBy(0, -{random.randint(100, 300)});")
+                HumanBehaviorSimulator.random_delay(0.5, 1.5)
             
     @staticmethod
     def scroll_main_to_bottom(driver):

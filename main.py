@@ -123,7 +123,7 @@ def my_connect_scraper():
             print("❌ Không thể khởi tạo driver")
             return
         
-        if not scraper.login(account["LINKEDIN_EMAIL"], account["LINKEDIN_PASSWORD"]):
+        if not scraper.login():
             print("❌ Đăng nhập thất bại")
             return
         
@@ -184,6 +184,6 @@ def test_scraper():
 if __name__ == "__main__":
     # driver = ChromeDriverManager().create_undetected_driver_with_session()
     # driver.get("https://bot.sannysoft.com")
-    # my_connect_scraper()
-    test_scraper()
+    my_connect_scraper()
+    # test_scraper()
     # test_multiple_accounts()

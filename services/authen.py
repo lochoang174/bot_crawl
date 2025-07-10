@@ -56,8 +56,14 @@ class LinkedInAuthenticator:
         """Đăng nhập thông minh - xử lý cả trang chọn tài khoản"""
         try:
             print("🚀 Đang thử truy cập LinkedIn...")
+              # Step 1: Open a blank new tab
+            self.driver.execute_script("window.open('about:blank', '_blank');")
+
+            # Step 2: Switch to the new tab (last tab)
+            self.driver.switch_to.window(self.driver.window_handles[-1])
+
+            # Step 3: Navigate to LinkedIn in new tab
             self.driver.get("https://www.linkedin.com/")
-            
             # Wait for the page to load
             utils.wait_for_page_load(self.driver)
 
@@ -72,6 +78,10 @@ class LinkedInAuthenticator:
                 print("✅ Cookie đã được tải thành công.")
             else:
                 print("❌ Không tìm thấy cookie, sẽ đăng nhập thủ công.")
+                self.driver.get("https://www.linkedin.com/login")
+                utils.wait_for_page_load(self.driver)
+                return False
+
             
             self.driver.get("https://www.linkedin.com/feed/")
             
@@ -81,10 +91,11 @@ class LinkedInAuthenticator:
             if self.is_logged_in():
                 print("🎉 Đã đăng nhập từ session cũ! Không cần nhập lại email/password")
                 return True
-            
-            print("🔐 Chưa đăng nhập, tiến hành đăng nhập thủ công...")
-            self.driver.get("https://www.linkedin.com/login")
-            
+            else:
+                print("❌ Cookie không hợp lệ hoặc hết hạn. Tiến hành đăng nhập thủ công...")
+                self.driver.get("https://www.linkedin.com/login")
+                utils.wait_for_page_load(self.driver)
+                return False
             # Wait for the login page to load
             utils.wait_for_page_load(self.driver)
                         
