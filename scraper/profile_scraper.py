@@ -134,7 +134,7 @@ class LinkedInProfileScraper:
                 break
 
             # Determine random batch size (20 to 30)
-            batch_size = random.randint(1)
+            batch_size = random.randint(2,3)
             batch_profiles = profiles_list[i:i+batch_size]
 
             print(f"\n🚀 Bắt đầu batch {batch_count + 1} với {len(batch_profiles)} profiles...")
@@ -162,7 +162,7 @@ class LinkedInProfileScraper:
             scroll_direction = "down"  # Start by scrolling down
             last_scroll_position = 0
 
-            while time.time() - start_time < random.uniform(120, 180):  # Scroll for 2–3 minutes
+            while time.time() - start_time < random.uniform(30, 60):  # Scroll for 2–3 minutes
                 if self.manager.is_stopped():
                     print(f"[{self.manager.id}] ⏹️ Halting during feed scrolling due to stop signal.")
                     return

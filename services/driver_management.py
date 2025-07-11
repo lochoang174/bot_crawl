@@ -78,6 +78,7 @@ class ChromeDriverManager:
             print(f"[{self.bot_id}] ✅ Tạo thư mục profile: {self.profile_path}")
 
         options = EdgeOptions()
+        options.headless = True
         options.add_argument(f"--user-data-dir={self.profile_path}")
         options.add_argument("--profile-directory=Default")
 

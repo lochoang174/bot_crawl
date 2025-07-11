@@ -72,9 +72,22 @@ class LinkedInAuthenticator:
                 print("🔐 Đang tải cookie từ file...")
                 cookies = json.loads(cookie_dict)
                 for cookie in cookies:
-                    if cookie.get('sameSite') is None or cookie['sameSite'] == 'no_restriction':
-                        cookie['sameSite'] = 'None'  # Đặt sameSite thành None để tránh lỗi
-                    self.driver.add_cookie(cookie)
+                    # Chỉ chấp nhận các giá trị sameSite hợp lệ
+                    valid_samesite = ["Strict", "Lax", "None"]
+                    
+                    if "sameSite" in cookie:
+                        if cookie["sameSite"] not in valid_samesite:
+                            # print(f"⚠️ Cookie với sameSite không hợp lệ: {cookie['sameSite']} → bỏ qua")
+                            del cookie["sameSite"]
+                    else:
+                        # Nếu sameSite không có, có thể thêm mặc định hoặc bỏ qua
+                        cookie["sameSite"] = "Lax"
+
+                    try:
+                        self.driver.add_cookie(cookie)
+                    except Exception as e:
+                        print(f"⚠️ Bỏ qua cookie không hợp lệ: {cookie}. Lý do: {e}")
+
                 print("✅ Cookie đã được tải thành công.")
             else:
                 print("❌ Không tìm thấy cookie, sẽ đăng nhập thủ công.")

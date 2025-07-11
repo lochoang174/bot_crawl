@@ -66,10 +66,6 @@ class UrlRepository:
             
             print(f"🔍 Đã tìm thấy {len(results)} URLs với bot_id = {bot_id} và status = 'pending'.")
             
-
-            for doc in results:
-                print("eqjd",doc)
-
             urls = [doc["url"] for doc in results if "url" in doc]
             print(f"✅ Tìm thấy {len(urls)} URLs với bot_id = {bot_id} và status = 'pending'.")
             return urls

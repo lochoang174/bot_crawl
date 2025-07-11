@@ -62,8 +62,9 @@ class LinkedInMyNetworkScraper:
 
         try:
             print(f"[{self.manager.id}] 🌐 Navigating to 'My Network' page...")
-            self.driver.get("https://www.linkedin.com/mynetwork/")
-            
+            my_network_link = self.driver.find_element(By.XPATH, "/html/body/div[5]/header/div/nav/ul/li[2]/a")
+            self.driver.execute_script("arguments[0].click();", my_network_link)
+                
             HumanBehaviorSimulator.random_delay(5, 8)
             
             # --- 2. USE THE CORRECT STOP CHECK ---
@@ -204,7 +205,8 @@ class LinkedInMyNetworkScraper:
 
         try:
             print(f"[{self.manager.id}] 🌐 Navigating to 'My Network' page...")
-            self.driver.get("https://www.linkedin.com/mynetwork/")
+            my_network_link = self.driver.find_element(By.XPATH, "/html/body/div[5]/header/div/nav/ul/li[2]/a")
+            self.driver.execute_script("arguments[0].click();", my_network_link)
             HumanBehaviorSimulator.random_delay(5, 8)
 
             if self.manager.is_stopped():
@@ -212,7 +214,7 @@ class LinkedInMyNetworkScraper:
                 return total_visited
 
             # Scroll main page
-            scroll_attempts = random.randint(5, 7)
+            scroll_attempts = random.randint(2,3)
             for i in range(scroll_attempts):
                 if self.manager.is_stopped(): return total_visited
                 print(f"[{self.manager.id}] ...scroll {i+1}/{scroll_attempts}")

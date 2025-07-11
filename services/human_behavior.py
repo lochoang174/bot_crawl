@@ -37,22 +37,36 @@ class HumanBehaviorSimulator:
             
     @staticmethod
     def scroll_main_to_bottom(driver):
-        """Scroll xuống cuối thẻ <main> nhiều lần để trigger lazy loading"""
+        """Scroll xuống cuối thẻ <main> một cách chậm rãi và tự nhiên để trigger lazy loading"""
         try:
             # Locate the <main> tag using full XPath
             main_element = driver.find_element("xpath", '/html/body/div/div[1]/div[3]/div[2]/main/div/div/main')
             last_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
             print(f"Initial scrollHeight of <main>: {last_height}")
 
-            for _ in range(5):
-                driver.execute_script("arguments[0].scrollTo(0, arguments[0].scrollHeight);", main_element)
-                HumanBehaviorSimulator.random_delay(2, 3)
+            for _ in range(5):  # Limit the number of scroll attempts
+                # Scroll by small increments to simulate human-like behavior
+                for _ in range(random.randint(5, 10)):  # Randomize the number of small scrolls per iteration
+                    scroll_distance = random.randint(100, 300)  # Smaller scroll increments
+                    driver.execute_script(f"arguments[0].scrollBy(0, {scroll_distance});", main_element)
+                    HumanBehaviorSimulator.random_delay(0.5, 1.5)  # Short delay between small scrolls
+                
+                # Add a slightly longer pause to simulate a human reviewing the content
+                HumanBehaviorSimulator.random_delay(2, 4)
+                
+                # Check the new scroll height
                 new_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
                 print(f"New scrollHeight of <main>: {new_height}")
+                
+                # If no new content is loaded, stop scrolling
                 if new_height == last_height:
                     print("No more content to load in <main>.")
                     break
+                
                 last_height = new_height
+
+            # Add a final pause to simulate a human reviewing the content
+            HumanBehaviorSimulator.random_delay(3, 5)
         except Exception as e:
             print(f"❌ Lỗi khi scroll thẻ <main>: {e}")
        

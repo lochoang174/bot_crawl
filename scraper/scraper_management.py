@@ -104,7 +104,7 @@ class LinkedInScraperManager:
         # STEP 1: Collect URLs from the network page.
         # The 'expand_and_collect_all_urls' method inside LinkedInMyNetworkScraper MUST be
         # modified to periodically check self.manager.is_stopped() during its scrolling/looping.
-        profile_urls = self.my_connect_scraper.expand_and_collect_all_urls(self.is_stopped())
+        profile_urls = self.my_connect_scraper.click_and_visit_all_profiles(self.is_stopped())
 
         # Check if the process was stopped during URL collection or if nothing was found.
         if self.is_stopped():
