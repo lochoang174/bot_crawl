@@ -102,7 +102,7 @@ def _run_detail_scraper_task(bot_id: int, log_queue: queue.Queue, scraper: Linke
             return
         log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="✅ Login successful! Starting scraping..."))
 
-        detailed_profiles = scraper.scrape_profile_details(bot_id= bot_id)
+        detailed_profiles = scraper.scrape_profile_details(bot_id= bot_id, log_queue=log_queue)
 
         if scraper.is_stopped():
             log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="🛑 Scraping stopped before processing profiles."))

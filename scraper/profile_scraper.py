@@ -1,3 +1,4 @@
+import queue
 import time
 import random
 import undetected_chromedriver as uc
@@ -7,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from models.face_model import FaceVector
+from proto import bot_pb2
 from services.human_behavior import HumanBehaviorSimulator 
 from typing import List, Dict, Optional
 from services.human_behavior import HumanBehaviorSimulator 
@@ -23,9 +25,9 @@ class LinkedInProfileScraper:
         self.driver = driver
         self.wait = WebDriverWait(driver, 20)
         self.rabbit = RabbitMQClient()
-        
-    
-    def scrape_profile_details(self, profile_url: str, url_repo: UrlRepository, profile_repo: ProfileRepository) -> Dict:
+
+
+    def scrape_profile_details(self, profile_url: str, url_repo: UrlRepository, profile_repo: ProfileRepository, log_queue: queue.Queue, bot_id: int) -> Dict:
         """
         Trích xuất thông tin chi tiết từ một profile và lưu vào database.
         """
@@ -35,6 +37,7 @@ class LinkedInProfileScraper:
             # Check for stop signal before starting
             if self.manager.is_stopped():
                 print(f"[{self.manager.id}] ⏹️ Halting profile detail scraping due to stop signal.")
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"⏹️ Halting profile detail scraping due to stop signal."))
                 return profile_data
 
             # Update status to 'processing'
@@ -50,7 +53,8 @@ class LinkedInProfileScraper:
             # Check for stop signal after loading the page
             if self.manager.is_stopped():
                 print(f"[{self.manager.id}] ⏹️ Halting profile detail scraping after loading page.")
-                url_repo.update_status_to_pending(profile_url) 
+                url_repo.update_status_to_pending(profile_url)
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"⏹️ Halting profile detail scraping after loading page."))
                 return profile_data
 
             # Extract profile details
@@ -88,23 +92,26 @@ class LinkedInProfileScraper:
             }
             self.rabbit.publish_message('face_queue', payload)
             print("  📤 Đã gửi message tới face_queue.")
-            
-            
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="📤 Đã gửi message tới face_queue."))
 
             # Update status to 'done'
             url_repo.update_status_to_done(profile_url)
 
             print("  ✅ Đã trích xuất và lưu thông tin profile:")
             print(json.dumps(profile_data, indent=4, ensure_ascii=False, default=str))
-            
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="✅ Đã trích xuất và lưu thông tin profile:"))
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=json.dumps(profile_data, indent=4, ensure_ascii=False, default=str)))
+
             return profile_data
 
 
         except TimeoutException:
             print(f"  ❌ Lỗi: Timeout khi chờ trang {profile_url} tải.")
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"❌ Lỗi: Timeout khi chờ trang {profile_url} tải."))
             profile_data['error'] = 'Page load timeout'
         except Exception as e:
             print(f"  ❌ Lỗi không xác định khi scrape profile {profile_url}: {e}")
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"❌ Lỗi không xác định khi scrape profile {profile_url}: {e}"))
             profile_data['error'] = str(e)
         finally:
             return profile_data
@@ -119,7 +126,7 @@ class LinkedInProfileScraper:
             return None
 
 
-    def get_all_profile_details(self, profiles_list: List[str], url_repo: UrlRepository, profile_repo: ProfileRepository):
+    def get_all_profile_details(self, profiles_list: List[str], url_repo: UrlRepository, profile_repo: ProfileRepository, log_queue: queue.Queue, bot_id: int) -> List[Dict]:
         """
         Lấy thông tin chi tiết từ danh sách profile URLs theo từng batch ngẫu nhiên (20–30),
         nghỉ 2–3 phút sau batch đầu tiên và nghỉ 5–7 phút sau mỗi batch tiếp theo.
@@ -131,32 +138,40 @@ class LinkedInProfileScraper:
         while i < total_profiles:
             if self.manager.is_stopped():
                 print(f"[{self.manager.id}] ⏹️ Halting profile scraping due to stop signal.")
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="⏹️ Halting profile scraping due to stop signal."))
                 break
 
             # Determine random batch size (20 to 30)
-            batch_size = random.randint(2,3)
+            batch_size = 1
             batch_profiles = profiles_list[i:i+batch_size]
 
             print(f"\n🚀 Bắt đầu batch {batch_count + 1} với {len(batch_profiles)} profiles...")
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"🚀 Bắt đầu batch {batch_count + 1} với {len(batch_profiles)} profiles..."))
 
             for j, profile_url in enumerate(batch_profiles):
                 if self.manager.is_stopped():
                     print(f"[{self.manager.id}] ⏹️ Halting during batch {batch_count + 1}.")
                     url_repo.update_status_to_pending(profile_url)
+                    log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"⏹️ Halting during batch {batch_count + 1}."))
                     return
 
                 print(f"\n{'='*20} [ Đang xử lý profile {i+j+1}/{total_profiles} ] {'='*20}")
-                self.scrape_profile_details(profile_url, url_repo, profile_repo)
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"Đang xử lý profile {i+j+1}/{total_profiles}"))
+                print(f"🔗 URL: {profile_url}")
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"🔗 URL: {profile_url}"))
+                self.scrape_profile_details(profile_url, url_repo, profile_repo, log_queue, bot_id)
 
             batch_count += 1
             i += len(batch_profiles)
 
             if i >= total_profiles:
                 print(f"✅ Đã hoàn thành việc scrape tất cả {total_profiles} profiles.")
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=f"✅ Đã hoàn thành việc scrape tất cả {total_profiles} profiles."))
                 break
 
             # Mimic human behavior during delay by accessing LinkedIn feed and scrolling
             print(f"\n⏳ Đang truy cập feed và cuộn để nghỉ trước batch tiếp theo...\n")
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="⏳ Đang truy cập feed và cuộn để nghỉ trước batch tiếp theo..."))
             self.driver.get("https://www.linkedin.com/feed/")
             start_time = time.time()
             scroll_direction = "down"  # Start by scrolling down
@@ -165,10 +180,12 @@ class LinkedInProfileScraper:
             while time.time() - start_time < random.uniform(30, 60):  # Scroll for 2–3 minutes
                 if self.manager.is_stopped():
                     print(f"[{self.manager.id}] ⏹️ Halting during feed scrolling due to stop signal.")
+                    log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="⏹️ Halting during feed scrolling due to stop signal."))
                     return
 
                 current_scroll_position = self.driver.execute_script("return window.pageYOffset;")
                 print(f"🔍 Current scroll position: {current_scroll_position}")
+                
 
                 # Randomize scroll distance and speed for slow scrolling
                 scroll_distance = random.randint(200, 500)  # Smaller scroll distance for slower scrolling
@@ -190,3 +207,4 @@ class LinkedInProfileScraper:
                         scroll_direction = "down"
 
             print(f"\n✅ Đã hoàn thành việc cuộn feed. Tiếp tục batch tiếp theo...\n")
+            log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="✅ Đã hoàn thành việc cuộn feed. Tiếp tục batch tiếp theo..."))

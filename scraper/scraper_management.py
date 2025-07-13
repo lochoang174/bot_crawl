@@ -1,4 +1,5 @@
 import json
+import queue
 import random
 import time
 import threading # <-- ADD THIS IMPORT
@@ -26,6 +27,7 @@ class LinkedInScraperManager:
         self.my_connect_scraper = None
         # self.search = None # You might want to initialize this to None too
         self.id = id
+        self.log_queue = queue.Queue()
         
         # --- MODIFICATION: Use threading.Event for thread-safe signaling ---
         self._stop_event = threading.Event()
@@ -135,18 +137,19 @@ class LinkedInScraperManager:
             
         # print(f"[{self.id}] 🎉 Finished scraping {len(detailed_profiles)} detailed profiles.")
         # return detailed_profiles
-        
-    def scrape_profile_details(self, bot_id: int) -> Dict:
+
+    def scrape_profile_details(self, bot_id: int, log_queue: queue.Queue) -> Dict:
         """Scrapes detailed profile information from the given profile URL."""
         if self.is_stopped():
             print(f"[{bot_id}] 🛑 Process stopped before scraping profile details.")
+            log_queue.put(f"[{bot_id}] 🛑 Process stopped before scraping profile details.")
             return {}
         url_repository = UrlRepository()
-        urls_to_crawl = url_repository.get_urls_by_bot_id(bot_id=bot_id)
+        urls_to_crawl = url_repository.get_urls_by_bot_id(bot_id=bot_id, log_queue=log_queue)
         
         url_repo = UrlRepository()
         profile_repo = ProfileRepository()
-        detailed_profiles = self.profile_scraper.get_all_profile_details(urls_to_crawl, url_repo, profile_repo)
+        detailed_profiles = self.profile_scraper.get_all_profile_details(urls_to_crawl, url_repo, profile_repo, log_queue, bot_id)
         
         return detailed_profiles
     

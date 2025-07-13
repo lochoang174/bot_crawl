@@ -87,6 +87,9 @@ class ChromeDriverManager:
         options.add_argument("--allow-running-insecure-content")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        
+        options.add_argument("--disable-features=WebRtcHideLocalIpsWithMdns")
+        options.add_argument("--disable-webrtc")
 
         try:
             driver = webdriver.Edge(options=options)

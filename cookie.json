@@ -1,20 +1,7 @@
 [
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1767756718,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "mbox",
-        "path": "/",
-        "sameSite": "no_restriction",
-        "secure": true,
-        "session": false,
-        "storeId": null,
-        "value": "PC#261cfc7b44e740d0a37a8851c1d64522.38_0#1767756718|session#3907288cb31146b5ac6bd1690d19917e#1752206578"
-    },
-    {
-        "domain": ".linkedin.com",
-        "expirationDate": 1754758382.343615,
+        "expirationDate": 1754823579.315976,
         "hostOnly": false,
         "httpOnly": false,
         "name": "lms_ads",
@@ -23,11 +10,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "AQHLApKpoDUN1gAAAZf1QTtGCanwSG60c6ZVmR4ggbi6E0SvXEpfECdVo5Wzpug2oaTLXBIZKxEhRxT65jlMbi7eos9TLfJt"
+        "value": "AQGo8SSBCr5MIwAAAZf5IdjLle4kQE3Q0OkzMPM5WiDQtod4JL-v-rAGyyAgj4PRbcRZgTOI8OcsPO9MealMzdTJGjjlpexd"
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1759128029.966146,
+        "expirationDate": 1760007578.391375,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_guid",
@@ -36,11 +23,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "8a98ef63-8df5-45d0-93ff-d39f0f8c5011"
+        "value": "34ae5fdc-524f-4809-8306-1c27d8ec8f45"
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1783742550.050863,
+        "expirationDate": 1783829277.873599,
         "hostOnly": false,
         "httpOnly": false,
         "name": "bcookie",
@@ -49,11 +36,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "\"v=2&a8f3c809-019c-4633-833b-de6fc3de3b9b\""
+        "value": "\"v=2&e1a98e6d-1cdc-499e-8f7d-d768c14db14e\""
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1752208110.0594,
+        "expirationDate": 1752295021.909541,
         "hostOnly": false,
         "httpOnly": true,
         "name": "__cf_bm",
@@ -62,11 +49,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "v1hCjXmSOPAx1s179TqicF9GpJJA9GmOc1lpyax_HBQ-1752206310-1.0.1.1-Ni69BMgonVTMTi7UwRKF6WQt4GAS0T0fbzts5eU6qynjTVSfEQnotqzsy4gLZYd03yxkzk3CIH_3ByiuPY.SZbw39jSZYhdnDJORJMSLOaw"
+        "value": "So9o6bPdEfLvkG3003tvLJ4s.19ECXh0XV3ndekpDvQ-1752293075-1.0.1.1-MdUTGpxuWveRb4025wneR3ryr.QCT2ms0SvI1VAIFaZcY2y1cNhdPkG7FgQgzsaLCsquvcsSg4Z2OJJbvRG_butXGHx9ic2NR1yWkHQzSqhSzMp_qf0zqKyAj.ORBtVt"
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1754758382.34372,
+        "expirationDate": 1754823579.31611,
         "hostOnly": false,
         "httpOnly": false,
         "name": "lms_analytics",
@@ -75,7 +62,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "AQHLApKpoDUN1gAAAZf1QTtGCanwSG60c6ZVmR4ggbi6E0SvXEpfECdVo5Wzpug2oaTLXBIZKxEhRxT65jlMbi7eos9TLfJt"
+        "value": "AQGo8SSBCr5MIwAAAZf5IdjLle4kQE3Q0OkzMPM5WiDQtod4JL-v-rAGyyAgj4PRbcRZgTOI8OcsPO9MealMzdTJGjjlpexd"
     },
     {
         "domain": ".linkedin.com",
@@ -87,11 +74,11 @@
         "secure": true,
         "session": true,
         "storeId": null,
-        "value": "taBcrIH61PuCVH7eNCyH0F58uBDuZFZOunQHZt3Fugn0%252fLd5WaIINgmwMRcH9cCA8WMTL9NDsEgy%252bkAwpjZi4Mp8OSA0%252fCTzbh4uTMsPUxvp5Z8AvrzMRVogGgRVixYR2fQW6fqEc2umCVg9AUYdOxpS%252bLgo6Ula4OZkgs6YZJFtCkgeCIhhQdhyNKFYtVvnTW%252bzVAgXGcMZsJkzIFUacBmJv2sh7T4lEhBu9j1c6dDSe%252fOj1TWlvybBGEFkwBfCVYpV4WuyZkMeUAWvLlAtPhepCQbVLaGlUJ3KcvGG4oqFWTaz2bLZ8opdWR7EImjIyuZd8UV1VYMnSc2MsQVZUy440ThGCLR5RM3JqFem6gU%253d"
+        "value": "taBcrIH61PuCVH7eNCyH0LNKRXFdWqLJ6b8ywJyet7VB5n9ZEaBNHQ5UB4mq9epuvxX7Mp%252fTopWEUZINlkrA%252bh3KRXAgkLh3OoHypXbwVRGirrVEovVAzZMb3o4yTqomoBhXEqqN0cVatb7HIbXjfCo1gDYlYhilU4aEUJdVuHBmcEFUOAeV%252fwQbaTqGbWJQyEAh1Hg7NJ%252fHMl88hFfrTI1qInSO4yg7Zav7OZFHPXbv5zOr64queT5BOtEn6jH2xk6wl7KwZjM6Rv3QB31JqhRd6oLDs7ZPotsiYiERMRSfTKADpNDHDZx%252bEwEiDK9JnBOnma0dBjMqgkxpKB2u2M5QsCE8YijZWffeajoAmU0%253d"
     },
     {
         "domain": ".www.linkedin.com",
-        "expirationDate": 1783742546.858953,
+        "expirationDate": 1783829221.909297,
         "hostOnly": false,
         "httpOnly": true,
         "name": "li_at",
@@ -100,7 +87,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "AQEDAVybKvACsdEIAAABl_emF3UAAAGYG7KbdVYALHOk4P0yv1pb8DoqQUn2zeuKRbzZQSICdJPaemqU3JPppV-rk9Jog5E6GD11AdpXvZrqCVl7uZyVuwrCSyo7I5UaQ4wcxU855hIkLK6LKsSUbbeX"
+        "value": "AQEDAVyqTA0ErbVEAAABl_zOal4AAAGYINruXlYAxtL-2mCcY0rBpI48IPn7mAgzPixwquJ-RZXxa-I2LNM6uWSzWkGps7-itggYT-L14swEfdZA9DTgXsJfVPn-smXT5uU_6erJH-j15DoDiOZHWg3N"
     },
     {
         "domain": ".linkedin.com",
@@ -116,19 +103,7 @@
     },
     {
         "domain": ".linkedin.com",
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "at_check",
-        "path": "/",
-        "sameSite": "no_restriction",
-        "secure": true,
-        "session": true,
-        "storeId": null,
-        "value": "true"
-    },
-    {
-        "domain": ".linkedin.com",
-        "expirationDate": 1752286267.634647,
+        "expirationDate": 1752379621.87473,
         "hostOnly": false,
         "httpOnly": false,
         "name": "lidc",
@@ -137,11 +112,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "\"b=OB44:s=O:r=O:a=O:p=O:g=3962:u=2:x=1:i=1752206549:t=1752286267:v=2:sig=AQHHtmUsDY-LWADkHIdO0_xtXdN4JxdE\""
+        "value": "\"b=OGST07:s=O:r=O:a=O:p=O:g=3236:u=1:x=1:i=1752293130:t=1752379475:v=2:sig=AQEJ_gDNyCtKhbYvosPiT6HtGk_cOVVi\""
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1754758381.802399,
+        "expirationDate": 1754823578.679945,
         "hostOnly": false,
         "httpOnly": false,
         "name": "AnalyticsSyncHistory",
@@ -150,11 +125,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "AQK4MEXp9ZG7jQAAAZf1QTi7xras_0JPcE08bag9DOLG0RzEJ2wLkwfiycWCEmarjcADLt8HgPayuDdphfVy5A"
+        "value": "AQJb34mbjmvVTwAAAZf5IdZodkCi0zD-AHU_51YgjDGKsXyHArMqdl54byiLkt4FGkJcKGk4nOwk6vag9TN2fw"
     },
     {
         "domain": ".www.linkedin.com",
-        "expirationDate": 1783742546.859421,
+        "expirationDate": 1783829222.176741,
         "hostOnly": false,
         "httpOnly": true,
         "name": "bscookie",
@@ -163,11 +138,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "\"v=1&20250630143754af0f0036-ddc6-4166-886d-d5a70497143eAQG_CdfyHod9OeTvpwp-_zhiud1e6dDD\""
+        "value": "\"v=1&20250402072129bb0c3afd-3ed3-4641-82ef-05c21009f5a5AQHvRBGF6QjSCPJeHkvPmAcC1DS2fLJ4\""
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1782888031.336392,
+        "expirationDate": 1775214700.333802,
         "hostOnly": false,
         "httpOnly": true,
         "name": "dfpfpt",
@@ -176,24 +151,23 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "8c3914f65686430f9f36ded441d76037"
+        "value": "65ed7ebf78f64670868097abba476051"
     },
     {
         "domain": ".www.linkedin.com",
-        "expirationDate": 1759982546.859191,
         "hostOnly": false,
         "httpOnly": false,
         "name": "JSESSIONID",
         "path": "/",
         "sameSite": "no_restriction",
         "secure": true,
-        "session": false,
+        "session": true,
         "storeId": null,
-        "value": "\"ajax:3470548317170444920\""
+        "value": "ajax:2915601750707935383"
     },
     {
         "domain": ".www.linkedin.com",
-        "expirationDate": 1783742546.858032,
+        "expirationDate": 1783829222.176291,
         "hostOnly": false,
         "httpOnly": true,
         "name": "li_rm",
@@ -202,11 +176,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "AQE-weUm17iAzgAAAZfEve3Pf_w7_UZYYwqZYBPKL9ACX_rvptwIo9wjThayj6ZsvxjpSSh5zAVLtZU_uh19z59IxICoozm8edDu71Gd4bTdiLLO8zm7b5uq4-3LomAKBfVm3QQAj5bQWGjF2PhISvwmvMBXs_KJJt0_qHNAyZljDnOC37DwzR6AMi_D9AN-DbTCjmIX_Mb3_iem-iiv-yyZGqJhh-M2wRvsXqcxnORbTA4JFutvuvlpmB-EfgPna1Y2P335oQ18glmto6hL-zUV9fwk1dZsAasXZ8orNpUsiPNC9GxwO-Fx1VkrZXOE13mqnJvdwvC1QKsfCfKNfQ"
+        "value": "AQFjL95QtxolpwAAAZf8zmtjxW3Bk6MhKpIAj_Cslj5WRQSB1kz3edPafc3mhrJmm6tibkkU4mcwHCKCh6i6ZiwxpjqsrMtWRzYB2GixKQSy72f7ScoHOFvyZaKWtG0l-Mt7Ohz6Zg5tcKX4RopRw93Gfzxn4g90yGKdr92032NKT-A-01kTLqr9Bp9yo1TuniEfdVxJ0sewNZaxgYDZ8Kk2HGs5J451zXKrCKEeY2r_RDu4Ki6ScyQ2LI06Lbf2VoVQMUYmuSfiCpBd0IQur10qy75bmddau8oZ5-uIqtqJ6ywUOszOLLMfOxF_JZEOEFvVYdKTJQCyp0TBvyp42g"
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1759982549.050774,
+        "expirationDate": 1760069276.873509,
         "hostOnly": false,
         "httpOnly": false,
         "name": "li_sugr",
@@ -215,11 +189,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "03941db4-0264-46f0-aa63-dba3c5a354ee"
+        "value": "8d07d977-4369-44af-8310-20d69e22048d"
     },
     {
         "domain": ".www.linkedin.com",
-        "expirationDate": 1767758547,
+        "expirationDate": 1767845224,
         "hostOnly": false,
         "httpOnly": false,
         "name": "li_theme",
@@ -232,7 +206,7 @@
     },
     {
         "domain": ".www.linkedin.com",
-        "expirationDate": 1767758547,
+        "expirationDate": 1767845224,
         "hostOnly": false,
         "httpOnly": false,
         "name": "li_theme_set",
@@ -245,7 +219,7 @@
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1759982546.85913,
+        "expirationDate": 1760069221.909267,
         "hostOnly": false,
         "httpOnly": false,
         "name": "liap",
@@ -257,20 +231,8 @@
         "value": "true"
     },
     {
-        "domain": "www.linkedin.com",
-        "hostOnly": true,
-        "httpOnly": true,
-        "name": "PLAY_SESSION",
-        "path": "/",
-        "sameSite": "lax",
-        "secure": true,
-        "session": true,
-        "storeId": null,
-        "value": "eyJhbGciOiJIUzI1NiJ9.eyJkYXRhIjp7InNlc3Npb25faWQiOiJiZGFmMTI0MS1kNjZjLTQ1MzItYjllYy0yOWVkM2I2NDk5OTV8MTc1MjE5OTYxNiIsImFsbG93bGlzdCI6Int9IiwicmVjZW50bHktc2VhcmNoZWQiOiIiLCJyZWZlcnJhbC11cmwiOiJodHRwczovL3d3dy5saW5rZWRpbi5jb20vaGVscC9saW5rZWRpbi9hbnN3ZXIvYTU0ODM2MC8iLCJyZWNlbnRseS12aWV3ZWQiOiIiLCJDUFQtaWQiOiJZZMOew53DhcKuwpRcdTAwMUZcdTAwMULCmcKsKsOkNXzCpCIsImZsb3dUcmFja2luZ0lkIjoibGdRdnU0NUJUOU9FdGQ1UWF0ZVFCdz09IiwiZXhwZXJpZW5jZSI6IiIsInRyayI6IiJ9LCJuYmYiOjE3NTIyMDUyODksImlhdCI6MTc1MjIwNTI4OX0.W-BOwOqNSyz8wKrhf3u905jO3067sz-DPubLR7jo-OA"
-    },
-    {
         "domain": ".www.linkedin.com",
-        "expirationDate": 1753416147,
+        "expirationDate": 1753502823,
         "hostOnly": false,
         "httpOnly": false,
         "name": "timezone",
@@ -283,7 +245,7 @@
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1754798548,
+        "expirationDate": 1754885224,
         "hostOnly": false,
         "httpOnly": false,
         "name": "UserMatchHistory",
@@ -292,11 +254,11 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "AQKwJnamTfe9QAAAAZf3ph7_ECwywKE4WnBSY-jqsWQCiCRqgMx90ZunCpT7IC_3ZL8GlLiqQa7eqL10EWVwl0iUBJ-McIRBDXcPcKoxaxUyP9vBa8dWlO0vHP8eoK02JBUoCO_7XenXYm0E9umD6uWvUCOWZ4sQeov7mjXWSmkstjV16zsbcvPg8g7gg874RlM-PKv9rv93WFH99QxjVnbC_VFTSiLffuFWJML3lwJSY7skshvDyHTofGBhOMHTSVPTto_OxoGVnwn-02ghFGtE-BdBjfCG1Nc3G8EhxpVgtYiguPu1WbT4LRNMcAv3XTLTcoQ1t257meGnpQUIaS3zbPb7gelPHjHIEgci5lZa38x1dw"
+        "value": "AQL54f7xQwp-9gAAAZf8znUk5WRM7adBRE3JjiFX_Y6DQ5qfEjdTMsccZ4YU4zll4jtJZvm9zE38hjFqvjnxYq9vdH8UZfGzF9NTKI7CLpV8g81ssgj7C4cCU52_3ovDpMZRyAv9srHOTdl27GSxGRS32bZFIpUhqJZYRiP4YEqUF8gkBUtSoJOe6kEM-5mAM5bFcS0RYIdAGLB5c_e30yc4sYj8BQGRoxXKSK1yGa-eT5bsUu3xS-hqc1BKLcXCRz-fUMrg2KJOa3AobAHFdKy7OTIPCiC_JKTbUvu7UEsPu9Am7yC5Mdbw1836IQ3XJEsg_1BnF2ipcqlhQSaidxNKYMlm7A785xBYB2sOjE7VARR0dA"
     },
     {
         "domain": ".linkedin.com",
-        "expirationDate": 1786762288.282158,
+        "expirationDate": 1786852840.052026,
         "hostOnly": false,
         "httpOnly": false,
         "name": "visit",
