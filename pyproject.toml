@@ -14,3 +14,5 @@ dependencies = [
     "undetected-chromedriver>=3.5.5",
     "webdriver-manager>=4.0.2",
 ]
+[tool.setuptools]
+packages = ["config", "models", "proto", "repositories", "scraper", "services"]

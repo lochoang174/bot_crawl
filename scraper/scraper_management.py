@@ -45,7 +45,12 @@ class LinkedInScraperManager:
         
     def initialize_driver(self) -> bool:
         """Khởi tạo driver và các scraper"""
-        self.driver = self.driver_manager.create_edge_driver_with_session()
+        try:
+            self.driver = self.driver_manager.create_edge_driver_with_session()
+            if self.driver:
+                pass
+        except Exception as e:
+            print(f"Có lỗi xảy ra: {e}")
         
         if not self.driver:
             return False

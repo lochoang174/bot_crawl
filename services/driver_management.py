@@ -88,6 +88,8 @@ class ChromeDriverManager:
         options.add_argument("--disable-dev-shm-usage")
 
         try:
+            os.environ['DISPLAY'] = ':1'
+
             driver = webdriver.Edge(options=options)
             print(f"[{self.bot_id}] ✅ Khởi tạo Edge driver thành công với session")
             return driver

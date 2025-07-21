@@ -185,5 +185,5 @@ if __name__ == "__main__":
     # driver = ChromeDriverManager().create_undetected_driver_with_session()
     # driver.get("https://bot.sannysoft.com")
     # my_connect_scraper()
-    test_scraper()
+    # test_scraper()
     # test_multiple_accounts()

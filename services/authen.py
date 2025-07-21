@@ -9,6 +9,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+import requests
 
 import utils
 from services.human_behavior import HumanBehaviorSimulator
@@ -57,42 +58,41 @@ class LinkedInAuthenticator:
         try:
             print("🚀 Đang thử truy cập LinkedIn...")
             self.driver.get("https://www.linkedin.com/")
-            
+
             # Wait for the page to load
             utils.wait_for_page_load(self.driver)
 
-            cookie_dict = json.dumps(utils.read_cookie_file("../cookie.json"))
-            if cookie_dict:
+            response = requests.get("https://res.cloudinary.com/dlfsdepfc/raw/upload/v1752857781/test.json")
+            response.raise_for_status()
+
+            cookies = response.json()  # cookies là list
+            if cookies:
                 print("🔐 Đang tải cookie từ file...")
-                cookies = json.loads(cookie_dict)
                 for cookie in cookies:
                     if cookie.get('sameSite') is None or cookie['sameSite'] == 'no_restriction':
-                        cookie['sameSite'] = 'None'  # Đặt sameSite thành None để tránh lỗi
+                        cookie['sameSite'] = 'None'
                     self.driver.add_cookie(cookie)
                 print("✅ Cookie đã được tải thành công.")
             else:
                 print("❌ Không tìm thấy cookie, sẽ đăng nhập thủ công.")
-            
+
             self.driver.get("https://www.linkedin.com/feed/")
-            
-            # Wait for the page to load
             utils.wait_for_page_load(self.driver)
-            
+
             if self.is_logged_in():
                 print("🎉 Đã đăng nhập từ session cũ! Không cần nhập lại email/password")
                 return True
-            
+
             print("🔐 Chưa đăng nhập, tiến hành đăng nhập thủ công...")
             self.driver.get("https://www.linkedin.com/login")
-            
-            # Wait for the login page to load
             utils.wait_for_page_load(self.driver)
-                        
+
         except Exception as e:
             print(f"❌ Lỗi trong quá trình đăng nhập thông minh: {e}")
             import traceback
             traceback.print_exc()
             return False
+
     
     def logout(self) -> bool:
         """Đăng xuất khỏi LinkedIn"""

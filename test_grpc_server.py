@@ -286,8 +286,8 @@ class BotServiceServicer(bot_pb2_grpc.BotServiceServicer):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     bot_pb2_grpc.add_BotServiceServicer_to_server(BotServiceServicer(), server)
-    server.add_insecure_port('[::]:50052')
-    print("🚀 gRPC server started on port 50052")
+    server.add_insecure_port('[::]:50051')
+    print("🚀 gRPC server started on port 50051")
     server.start()
     
     try:
