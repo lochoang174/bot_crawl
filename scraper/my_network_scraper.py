@@ -72,7 +72,7 @@ class LinkedInMyNetworkScraper:
                 return collected_urls
 
             # Step 1: Scroll the main page to load content
-            scroll_attempts = random.randint(5, 7)
+            scroll_attempts = random.randint(1, 2)
             print(f"[{self.manager.id}] 🔍 Scrolling main page {scroll_attempts} times...")
             for i in range(scroll_attempts):
                 if self.manager.is_stopped(): return collected_urls # Check in loops

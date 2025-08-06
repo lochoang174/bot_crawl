@@ -5,7 +5,7 @@ from models.status_enum import UrlStatus
 from typing import List
 from repositories.profile_repository import ProfileRepository
 
-COLLECTION = "url"
+COLLECTION = "urls"
 
 class UrlRepository:
     def __init__(self):

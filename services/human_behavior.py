@@ -38,24 +38,24 @@ class HumanBehaviorSimulator:
             
     @staticmethod
     def scroll_main_to_bottom(driver):
-        """Scroll xuống cuối thẻ <main> nhiều lần để trigger lazy loading"""
+        """Scroll xuống cuối thẻ #workspace nhiều lần để trigger lazy loading"""
         try:
-            # Locate the <main> tag using full XPath
-            main_element = driver.find_element("xpath", '/html/body/div/div[1]/div[3]/div[2]/main/div/div/main')
+            # Locate the element with ID 'workspace'
+            main_element = driver.find_element("id", "workspace")
             last_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
-            print(f"Initial scrollHeight of <main>: {last_height}")
+            print(f"Initial scrollHeight of #workspace: {last_height}")
 
             for _ in range(5):
                 driver.execute_script("arguments[0].scrollTo(0, arguments[0].scrollHeight);", main_element)
                 HumanBehaviorSimulator.random_delay(2, 3)
                 new_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
-                print(f"New scrollHeight of <main>: {new_height}")
+                print(f"New scrollHeight of #workspace: {new_height}")
                 if new_height == last_height:
-                    print("No more content to load in <main>.")
+                    print("No more content to load in #workspace.")
                     break
                 last_height = new_height
         except Exception as e:
-            print(f"❌ Lỗi khi scroll thẻ <main>: {e}")
+            print(f"❌ Lỗi khi scroll thẻ #workspace: {e}")
        
      
             
