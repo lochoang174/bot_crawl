@@ -57,6 +57,13 @@ class LinkedInAuthenticator:
         """Đăng nhập thông minh - xử lý cả trang chọn tài khoản"""
         try:
             print("🚀 Đang thử truy cập LinkedIn...")
+              # Step 1: Open a blank new tab
+            self.driver.execute_script("window.open('about:blank', '_blank');")
+
+            # Step 2: Switch to the new tab (last tab)
+            self.driver.switch_to.window(self.driver.window_handles[-1])
+
+            # Step 3: Navigate to LinkedIn in new tab
             self.driver.get("https://www.linkedin.com/")
 
             # Wait for the page to load

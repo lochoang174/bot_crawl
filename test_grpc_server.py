@@ -16,7 +16,7 @@ from proto import bot_pb2, bot_pb2_grpc
 # Bot status will now be RUNNING or STOPPED
 active_bots = {}
 
-def _run_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: LinkedInScraperManager, company_names: list):
+def _run_scraper_task(bot_id: int, log_queue: queue.Queue, scraper: LinkedInScraperManager, company_names: list):
     """
     The scraping task that runs in a separate thread.
     It now checks for the stop signal more frequently.
@@ -47,7 +47,7 @@ def _run_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: LinkedInScra
             # This inner loop is still useful, as the blocking functions will now break out of their own internal loops.
           
                 # Now, if STOP is called, this function will return early instead of blocking for minutes.
-            detailed_profiles = scraper.scrape_my_connect_profiles()
+            detailed_profiles = scraper.scrape_my_connect_profiles(bot_id=bot_id, log_queue=log_queue)
 
             if scraper.is_stopped(): break
 
@@ -85,7 +85,7 @@ def _run_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: LinkedInScra
             del active_bots[bot_id]
             print(f"[{bot_id}] Bot removed from active list.")
 
-def _run_detail_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: LinkedInScraperManager):
+def _run_detail_scraper_task(bot_id: int, log_queue: queue.Queue, scraper: LinkedInScraperManager):
     """
     The detailed scraping task that runs in a separate thread.
     It now checks for the stop signal more frequently.
@@ -102,7 +102,7 @@ def _run_detail_scraper_task(bot_id: str, log_queue: queue.Queue, scraper: Linke
             return
         log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="✅ Login successful! Starting scraping..."))
 
-        detailed_profiles = scraper.scrape_profile_details(bot_id= bot_id)
+        detailed_profiles = scraper.scrape_profile_details(bot_id= bot_id, log_queue=log_queue)
 
         if scraper.is_stopped():
             log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="🛑 Scraping stopped before processing profiles."))

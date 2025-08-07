@@ -1,3 +1,4 @@
+import queue
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -15,11 +16,15 @@ class LinkedInMyNetworkScraper:
         self.driver = driver
         self.manager = manager # <-- This gives access to is_stopped()
         self.url_repository = UrlRepository()  # Initialize the UrlRepository
-        
-    
-    def scroll_to_show_more(self, timeout: int = 10) -> bool:
+
+
+    def scroll_to_show_more(self, bot_id: int, log_queue: queue.Queue) -> bool:
         try:
             print("🔍 Đang cuộn trang")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message="🔍 Đang cuộn trang"
+            ))
          
             modal = self.driver.find_element(By.CSS_SELECTOR, "#root > dialog > div > div")
 
@@ -55,35 +60,58 @@ class LinkedInMyNetworkScraper:
             print(f"❌ Lỗi không mong muốn khi click 'Show all': {e}")
 
 
-    def expand_and_collect_all_urls(self, isStop: bool) -> list[str]:
+    def expand_and_collect_all_urls(self, bot_id: int, log_queue: queue.Queue) -> list[str]:
         # --- 1. INITIALIZE A LIST TO HOLD URLS ---
         # The function will now collect URLs here and return this list.
         collected_urls = []
 
         try:
             print(f"[{self.manager.id}] 🌐 Navigating to 'My Network' page...")
-            self.driver.get("https://www.linkedin.com/mynetwork/")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] 🌐 Navigating to 'My Network' page..."
+            ))
+            my_network_link = self.driver.find_element(By.CSS_SELECTOR, "#global-nav > div > nav > ul > li:nth-child(2) > a")
+            self.driver.execute_script("arguments[0].click();", my_network_link)
+                
             HumanBehaviorSimulator.random_delay(5, 8)
             
             # --- 2. USE THE CORRECT STOP CHECK ---
             # Check the manager's stop event before starting heavy work.
             if self.manager.is_stopped(): 
                 print(f"[{self.manager.id}] ⏹️ Halting before starting URL collection due to stop signal.")
-                return collected_urls
+                log_queue.put(bot_pb2.BotLog(
+                    bot_id=bot_id,
+                    message=f"[{self.manager.id}] ⏹️ Halting before starting URL collection due to stop signal."
+                ))
 
+                return collected_urls
+                
             # Step 1: Scroll the main page to load content
             scroll_attempts = random.randint(1, 2)
             print(f"[{self.manager.id}] 🔍 Scrolling main page {scroll_attempts} times...")
             for i in range(scroll_attempts):
                 if self.manager.is_stopped(): return collected_urls # Check in loops
                 print(f"[{self.manager.id}] ...scroll {i+1}/{scroll_attempts}")
+                log_queue.put(bot_pb2.BotLog(
+                    bot_id=bot_id,
+                    message=f"[{self.manager.id}] ...scroll {i+1}/{scroll_attempts}"
+                ))
                 HumanBehaviorSimulator.scroll_main_to_bottom(self.driver)
                 HumanBehaviorSimulator.random_delay(1, 2)
 
             # Step 2: Find all "Show all" buttons
             print(f"[{self.manager.id}] 🔍 Finding all 'Show all' buttons...")
-            show_all_buttons = self.driver.find_elements(By.XPATH, "//button[.//span[normalize-space()='Show all']]")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] 🔍 Finding all 'Show all' buttons..."
+            ))
+            show_all_buttons = self.driver.find_elements(By.XPATH, "//button[.//span[normalize-space()='Show all' or normalize-space()='Hiển thị tất cả']]")
             print(f"[{self.manager.id}] ✅ Found {len(show_all_buttons)} 'Show all' buttons.")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] ✅ Found {len(show_all_buttons)} 'Show all' buttons."
+            ))
 
             bot_counter = 1
             max_bot_counter = 4
@@ -92,28 +120,48 @@ class LinkedInMyNetworkScraper:
                 # --- 2. USE THE CORRECT STOP CHECK (again) ---
                 if self.manager.is_stopped():
                     print(f"[{self.manager.id}] ⏹️ Halting before processing button {index + 1} due to stop signal.")
+                    log_queue.put(bot_pb2.BotLog(
+                        bot_id=bot_id,
+                        message=f"[{self.manager.id}] ⏹️ Halting before processing button {index + 1} due to stop signal."
+                    ))
                     return collected_urls
 
                 try:
                     print(f"\n[{self.manager.id}] 🚀 Processing 'Show all' button #{index + 1}...")
+                    log_queue.put(bot_pb2.BotLog(
+                        bot_id=bot_id,
+                        message=f"[{self.manager.id}] 🚀 Processing 'Show all' button #{index + 1}..."
+                    ))
                     self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
                     HumanBehaviorSimulator.random_delay(1, 2)
                     button.click()
                     print(f"[{self.manager.id}] ✅ Clicked 'Show all' button.")
+                    log_queue.put(bot_pb2.BotLog(
+                        bot_id=bot_id,
+                        message=f"[{self.manager.id}] ✅ Clicked 'Show all' button."
+                    ))
 
                     # This is the inner loop for scrolling the modal
                     while not self.manager.is_stopped():
                         # --- 3. SCROLL AND COLLECT ---
                         # The scroll_to_show_more and _collect_profile_urls should also be in this class
-                        if not self.scroll_to_show_more(timeout=7):
+                        if not self.scroll_to_show_more(bot_id, log_queue):
                             print(f"[{self.manager.id}] 🏁 Reached the end of the modal list.")
+                            log_queue.put(bot_pb2.BotLog(
+                                bot_id=bot_id,
+                                message=f"[{self.manager.id}] 🏁 Reached the end of the modal list."
+                            ))
                             break # Exit the modal scroll loop
 
                         # --- 4. COLLECT URLS, DON'T SAVE ---
                         # This helper now just returns URLs from the current view
-                        new_urls_found = self._collect_profile_urls()
+                        new_urls_found = self._collect_profile_urls(bot_id, log_queue)
                         if not new_urls_found:
                             print(f"[{self.manager.id}] ❌ No new profile URLs found in this modal.")
+                            log_queue.put(bot_pb2.BotLog(
+                                bot_id=bot_id,
+                                message=f"[{self.manager.id}] ❌ No new profile URLs found in this modal."
+                            ))
                             break
                         
                         # Add only new URLs to our main list
@@ -121,9 +169,17 @@ class LinkedInMyNetworkScraper:
                        
                         for url in new_urls_found:
                             print("🔗 Đang xử lý URL:", url)
+                            log_queue.put(bot_pb2.BotLog(
+                                bot_id=bot_id,
+                                message=f"[{self.manager.id}] 🔗 Đang xử lý URL: {url}"
+                            ))
                             created_profile = self.url_repository.create(url, status=UrlStatus.PENDING, bot_id=bot_counter)  
                             if created_profile:
                                 print(f"✅ Đã lưu profile URL {url} vào MongoDB.")
+                                log_queue.put(bot_pb2.BotLog(
+                                    bot_id=bot_id,
+                                    message=f"✅ Đã lưu profile URL {url} vào MongoDB."
+                                ))
                             
                             bot_counter = bot_counter + 1 if bot_counter < max_bot_counter else 1
 
@@ -134,13 +190,25 @@ class LinkedInMyNetworkScraper:
                         
                         if newly_added_count == 0:
                             print(f"[{self.manager.id}] ⏳ No new profiles found in this scroll. Closing modal.")
+                            log_queue.put(bot_pb2.BotLog(
+                                bot_id=bot_id,
+                                message=f"[{self.manager.id}] ⏳ No new profiles found in this scroll. Closing modal."
+                            ))
                             break
                         else:
-                             print(f"[{self.manager.id}] 👍 Found {newly_added_count} new profiles. Total collected: {len(collected_urls)}")
+                            print(f"[{self.manager.id}] 👍 Found {newly_added_count} new profiles. Total collected: {len(collected_urls)}")
+                            log_queue.put(bot_pb2.BotLog(
+                                bot_id=bot_id,
+                                message=f"[{self.manager.id}] 👍 Found {newly_added_count} new profiles. Total collected: {len(collected_urls)}"
+                            ))
 
 
                     # Close the modal
                     print(f"[{self.manager.id}] 🚪 Closing modal...")
+                    log_queue.put(bot_pb2.BotLog(
+                        bot_id=bot_id,
+                        message=f"[{self.manager.id}] 🚪 Closing modal..."
+                    ))
                     close_button = self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']")
                     self.driver.execute_script("arguments[0].click();", close_button)
                     HumanBehaviorSimulator.random_delay(2, 3)
@@ -155,6 +223,10 @@ class LinkedInMyNetworkScraper:
                     continue
 
             print(f"[{self.manager.id}] ✅ Finished processing all 'Show all' buttons.")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] ✅ Finished processing all 'Show all' buttons."
+            ))
             
             # --- 5. RETURN THE COLLECTED LIST ---
             # The function now successfully returns the list of URLs for the next step.
@@ -163,8 +235,8 @@ class LinkedInMyNetworkScraper:
         except Exception as e:
             print(f"[{self.manager.id}] ❌ A critical error occurred in expand_and_collect_all_urls: {e}")
             return collected_urls
-        
-    def _collect_profile_urls(self) -> List[str]:
+
+    def _collect_profile_urls(self, bot_id: int, log_queue: queue.Queue) -> List[str]:
         """
         Collect profile URLs from the modal and return them as a list of strings.
         """
@@ -184,8 +256,138 @@ class LinkedInMyNetworkScraper:
             # Remove duplicates by converting to a set and back to a list
             profile_urls = list(set(profile_urls))
             print(f"🔍 Tìm thấy tổng cộng {len(profile_urls)} profile URLs.")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] 🔍 Tìm thấy tổng cộng {len(profile_urls)} profile URLs."
+            ))
             return profile_urls
 
         except Exception as e:
             print(f"❌ Lỗi khi thu thập danh sách profile cuối cùng: {e}")
             return []
+
+
+    def click_and_visit_all_profiles(self, bot_id: int, log_queue: queue.Queue) -> int:
+        """
+        Clicks each 'Show all' button, opens each collected profile URL in a new tab, 
+        counts the visit, and closes the tab.
+        
+        Returns:
+            int: Total number of profiles visited.
+        """
+        total_visited = 0
+
+        try:
+            print(f"[{self.manager.id}] 🌐 Navigating to 'My Network' page...")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] 🌐 Navigating to 'My Network' page..."
+            ))
+            my_network_link = self.driver.find_element(By.CSS_SELECTOR, "#global-nav > div > nav > ul > li:nth-child(2) > a")
+            self.driver.execute_script("arguments[0].click();", my_network_link)
+            HumanBehaviorSimulator.random_delay(5, 8)
+
+            if self.manager.is_stopped():
+                print(f"[{self.manager.id}] ⏹️ Stopped before starting.")
+                return total_visited
+
+            # Scroll main page
+            scroll_attempts = random.randint(2,3)
+            for i in range(scroll_attempts):
+                if self.manager.is_stopped(): return total_visited
+                print(f"[{self.manager.id}] ...scroll {i+1}/{scroll_attempts}")
+                log_queue.put(bot_pb2.BotLog(
+                    bot_id=bot_id,
+                    message=f"[{self.manager.id}] ...scroll {i+1}/{scroll_attempts}"
+                ))
+                print(f"[{self.manager.id}] 🔍 Scrolling main page {scroll_attempts} times...")
+                log_queue.put(bot_pb2.BotLog(
+                    bot_id=bot_id,
+                    message=f"[{self.manager.id}] 🔍 Scrolling main page {scroll_attempts} times..."
+                ))
+                HumanBehaviorSimulator.scroll_main_to_bottom(self.driver)
+                HumanBehaviorSimulator.random_delay(1, 2)
+
+            # Find all "Show all" buttons
+            show_all_buttons = self.driver.find_elements(By.XPATH, "//button[.//span[normalize-space()='Show all' or normalize-space()='Hiển thị tất cả']]")
+            print(f"[{self.manager.id}] ✅ Found {len(show_all_buttons)} 'Show all' buttons.")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] ✅ Found {len(show_all_buttons)} 'Show all' buttons."
+            ))
+
+            for index, button in enumerate(show_all_buttons):
+                if self.manager.is_stopped(): return total_visited
+                try:
+                    print(f"\n[{self.manager.id}] 🚀 Processing 'Show all' button #{index + 1}...")
+                    log_queue.put(bot_pb2.BotLog(
+                        bot_id=bot_id,
+                        message=f"[{self.manager.id}] 🚀 Processing 'Show all' button #{index + 1}..."
+                    ))
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
+                    HumanBehaviorSimulator.random_delay(1, 2)
+                    button.click()
+                    HumanBehaviorSimulator.random_delay(2, 4)
+
+                    # Scroll modal and collect URLs
+                    while not self.manager.is_stopped():
+                        if not self.scroll_to_show_more(timeout=7):
+                            break
+                        profile_urls = self._collect_profile_urls(bot_id, log_queue)
+                        if not profile_urls:
+                            break
+
+                        for url in profile_urls:
+                            if self.manager.is_stopped(): return total_visited
+                            print(f"🔗 Visiting profile URL: {url}")
+                            log_queue.put(bot_pb2.BotLog(
+                                bot_id=bot_id,
+                                message=f"[{self.manager.id}] 🔗 Visiting profile URL: {url}"
+                            ))
+                            self.driver.execute_script("window.open(arguments[0], '_blank');", url)
+                            self.driver.switch_to.window(self.driver.window_handles[-1])  # Switch to new tab
+                            HumanBehaviorSimulator.random_delay(3, 5)
+                            total_visited += 1
+                            print(f"✅ Visited {total_visited} profiles so far.")
+                            log_queue.put(bot_pb2.BotLog(
+                                bot_id=bot_id,
+                                message=f"[{self.manager.id}] ✅ Visited {total_visited} profiles so far."
+                            ))
+                            self.driver.close()  # Close the tab
+                            self.driver.switch_to.window(self.driver.window_handles[0])  # Back to main tab
+                            HumanBehaviorSimulator.random_delay(1, 2)
+
+                    # Close modal
+                    try:
+                        close_button = self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']")
+                        self.driver.execute_script("arguments[0].click();", close_button)
+                        HumanBehaviorSimulator.random_delay(2, 3)
+                    except Exception as e:
+                        print(f"[{self.manager.id}] ⚠️ Could not close modal: {e}")
+                        log_queue.put(bot_pb2.BotLog(
+                            bot_id=bot_id,
+                            message=f"[{self.manager.id}] ⚠️ Could not close modal: {e}"
+                        ))
+
+                except Exception as e:
+                    print(f"[{self.manager.id}] ❌ Error with 'Show all' button #{index + 1}: {e}")
+                    log_queue.put(bot_pb2.BotLog(
+                        bot_id=bot_id,
+                        message=f"[{self.manager.id}] ❌ Error with 'Show all' button #{index + 1}: {e}"
+                    ))
+                    try:
+                        self.driver.find_element(By.XPATH, "//button[@aria-label='Dismiss']").click()
+                    except:
+                        pass
+                    continue
+
+            print(f"[{self.manager.id}] ✅ Done visiting profiles. Total visited: {total_visited}")
+            log_queue.put(bot_pb2.BotLog(
+                bot_id=bot_id,
+                message=f"[{self.manager.id}] ✅ Done visiting profiles. Total visited: {total_visited}"
+            ))
+            return total_visited
+
+        except Exception as e:
+            print(f"[{self.manager.id}] ❌ Critical error in click_and_visit_all_profiles: {e}")
+            return total_visited

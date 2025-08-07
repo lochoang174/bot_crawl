@@ -15,6 +15,7 @@
     {
         "domain": ".linkedin.com",
         "expirationDate": 1760007578.391375,
+        "expirationDate": 1760007578.391375,
         "hostOnly": false,
         "httpOnly": false,
         "name": "_guid",
@@ -23,6 +24,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
+        "value": "34ae5fdc-524f-4809-8306-1c27d8ec8f45"
         "value": "34ae5fdc-524f-4809-8306-1c27d8ec8f45"
     },
     {
@@ -36,6 +38,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
+        "value": "\"v=2&e1a98e6d-1cdc-499e-8f7d-d768c14db14e\""
         "value": "\"v=2&e1a98e6d-1cdc-499e-8f7d-d768c14db14e\""
     },
     {
@@ -139,9 +142,11 @@
         "session": false,
         "storeId": null,
         "value": "\"v=1&20250402072129bb0c3afd-3ed3-4641-82ef-05c21009f5a5AQHvRBGF6QjSCPJeHkvPmAcC1DS2fLJ4\""
+        "value": "\"v=1&20250402072129bb0c3afd-3ed3-4641-82ef-05c21009f5a5AQHvRBGF6QjSCPJeHkvPmAcC1DS2fLJ4\""
     },
     {
         "domain": ".linkedin.com",
+        "expirationDate": 1775214700.333802,
         "expirationDate": 1775214700.333802,
         "hostOnly": false,
         "httpOnly": true,
@@ -151,6 +156,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
+        "value": "65ed7ebf78f64670868097abba476051"
         "value": "65ed7ebf78f64670868097abba476051"
     },
     {
@@ -178,6 +184,7 @@
         "session": false,
         "storeId": null,
         "value": "AQFjL95QtxolpwAAAZf8zmtjxW3Bk6MhKpIAj_Cslj5WRQSB1kz3edPafc3mhrJmm6tibkkU4mcwHCKCh6i6ZiwxpjqsrMtWRzYB2GixKQSy72f7ScoHOFvyZaKWtG0l-Mt7Ohz6Zg5tcKX4RopRw93Gfzxn4g90yGKdr92032NKT-A-01kTLqr9Bp9yo1TuniEfdVxJ0sewNZaxgYDZ8Kk2HGs5J451zXKrCKEeY2r_RDu4Ki6ScyQ2LI06Lbf2VoVQMUYmuSfiCpBd0IQur10qy75bmddau8oZ5-uIqtqJ6ywUOszOLLMfOxF_JZEOEFvVYdKTJQCyp0TBvyp42g"
+        "value": "AQFjL95QtxolpwAAAZf8zmtjxW3Bk6MhKpIAj_Cslj5WRQSB1kz3edPafc3mhrJmm6tibkkU4mcwHCKCh6i6ZiwxpjqsrMtWRzYB2GixKQSy72f7ScoHOFvyZaKWtG0l-Mt7Ohz6Zg5tcKX4RopRw93Gfzxn4g90yGKdr92032NKT-A-01kTLqr9Bp9yo1TuniEfdVxJ0sewNZaxgYDZ8Kk2HGs5J451zXKrCKEeY2r_RDu4Ki6ScyQ2LI06Lbf2VoVQMUYmuSfiCpBd0IQur10qy75bmddau8oZ5-uIqtqJ6ywUOszOLLMfOxF_JZEOEFvVYdKTJQCyp0TBvyp42g"
     },
     {
         "domain": ".linkedin.com",
@@ -190,6 +197,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
+        "value": "8d07d977-4369-44af-8310-20d69e22048d"
         "value": "8d07d977-4369-44af-8310-20d69e22048d"
     },
     {
@@ -259,6 +267,7 @@
     },
     {
         "domain": ".linkedin.com",
+        "expirationDate": 1786852840.052026,
         "expirationDate": 1786852840.052026,
         "hostOnly": false,
         "httpOnly": false,

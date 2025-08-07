@@ -25,16 +25,15 @@ class HumanBehaviorSimulator:
         time.sleep(scroll_pause_time)
     
     @staticmethod
-    def scroll_to_bottom(driver):
-        """Scroll xuống cuối trang nhiều lần để trigger lazy loading"""
-        last_height = driver.execute_script("return document.body.scrollHeight")
-        for i in range(5):
+    def scroll_to_bottom(driver, num_scrolls: int = 3, scroll_delay_min: float = 1, scroll_delay_max: float = 3):
+        """Simulates human-like scrolling to the bottom of the page."""
+        for _ in range(num_scrolls):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            HumanBehaviorSimulator.random_delay(2, 3)
-            new_height = driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
-                break
-            last_height = new_height
+            HumanBehaviorSimulator.random_delay(scroll_delay_min, scroll_delay_max)
+            # Optional: Scroll up slightly sometimes
+            if random.random() < 0.2: # 20% chance to scroll up a bit
+                driver.execute_script(f"window.scrollBy(0, -{random.randint(100, 300)});")
+                HumanBehaviorSimulator.random_delay(0.5, 1.5)
             
     @staticmethod
     def scroll_main_to_bottom(driver):
@@ -45,15 +44,27 @@ class HumanBehaviorSimulator:
             last_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
             print(f"Initial scrollHeight of #workspace: {last_height}")
 
-            for _ in range(5):
-                driver.execute_script("arguments[0].scrollTo(0, arguments[0].scrollHeight);", main_element)
-                HumanBehaviorSimulator.random_delay(2, 3)
+            for _ in range(5):  # Limit the number of scroll attempts
+                # Scroll by small increments to simulate human-like behavior
+                for _ in range(random.randint(2, 3)):  # Randomize the number of small scrolls per iteration
+                    scroll_distance = random.randint(100, 300)  # Smaller scroll increments
+                    driver.execute_script(f"arguments[0].scrollBy(0, {scroll_distance});", main_element)
+                    HumanBehaviorSimulator.random_delay(0.5, 1.5)  # Short delay between small scrolls
+                
+                # Add a slightly longer pause to simulate a human reviewing the content
+                HumanBehaviorSimulator.random_delay(2, 4)
+                
+                # Check the new scroll height
                 new_height = driver.execute_script("return arguments[0].scrollHeight", main_element)
                 print(f"New scrollHeight of #workspace: {new_height}")
                 if new_height == last_height:
                     print("No more content to load in #workspace.")
                     break
+                
                 last_height = new_height
+
+            # Add a final pause to simulate a human reviewing the content
+            HumanBehaviorSimulator.random_delay(1, 2)
         except Exception as e:
             print(f"❌ Lỗi khi scroll thẻ #workspace: {e}")
        

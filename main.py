@@ -123,7 +123,7 @@ def my_connect_scraper():
             print("❌ Không thể khởi tạo driver")
             return
         
-        if not scraper.login(account["LINKEDIN_EMAIL"], account["LINKEDIN_PASSWORD"]):
+        if not scraper.login():
             print("❌ Đăng nhập thất bại")
             return
         

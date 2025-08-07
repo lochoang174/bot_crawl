@@ -1,3 +1,5 @@
+import queue
+from proto import bot_pb2
 from services.database import get_db_manager
 from models.url_model import UrlModel
 from bson import ObjectId
@@ -44,30 +46,50 @@ class UrlRepository:
     def find_by_status(self, status: str):
         return [UrlModel(**doc) for doc in self.collection.find({"status": status})]
 
-    def get_urls_by_bot_id(self, bot_id: int) -> List[str]:
+    def get_urls_by_bot_id(self, bot_id: int, log_queue: queue.Queue) -> List[str]:
         """
         Retrieve all URLs from the database where bot_id matches the given parameter
         and status is 'pending'.
-        
-        :param bot_id: The bot_id to filter URLs by.
-        :return: A list of URLs with the specified bot_id and status 'pending'.
         """
         try:
-            # Make sure UrlStatus.PENDING == "pending"
-            results_cursor = self.collection.find({"bot_id": 1, "status": "pending"})
-            results = list(results_cursor)  # Convert cursor to reusable list
+            if log_queue:
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message="📥 Entered get_urls_by_bot_id"))
+            print(f"[{bot_id}] Fetching URLs from DB...")
 
-            for doc in results:
-                print(doc)
+            # if isinstance(bot_id, str):
+            #     try:
+            #         bot_id = int(bot_id)
+            #     except ValueError:
+            #         msg = f"❌ bot_id '{bot_id}' không thể chuyển đổi sang kiểu int."
+            #         print(msg)
+            #         if log_queue:
+            #             log_queue.put(bot_pb2.BotLog(bot_id=0, message=msg))  # bot_id chưa hợp lệ, có thể dùng 0
+            #         return []
+
+            results_cursor = self.collection.find({"bot_id": int(bot_id), "status": "pending"})
+            results = list(results_cursor)
+
+            msg_found = f"🔍 Đã tìm thấy {len(results)} URLs với bot_id = {bot_id} và status = 'pending'."
+            print(msg_found)
+            if log_queue:
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=msg_found))
 
             urls = [doc["url"] for doc in results if "url" in doc]
-            print(f"✅ Tìm thấy {len(urls)} URLs với bot_id = 1 và status = 'pending'.")
+
+            msg_ok = f"✅ Tìm thấy {len(urls)} URLs hợp lệ."
+            print(msg_ok)
+            if log_queue:
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=msg_ok))
+
             return urls
 
         except Exception as e:
-            print(f"❌ Lỗi khi truy vấn URLs với bot_id = {bot_id} và status = 'pending': {e}")
+            msg = f"❌ Lỗi khi truy vấn URLs với bot_id = {bot_id} và status = 'pending': {e}"
+            print(msg)
+            if log_queue:
+                log_queue.put(bot_pb2.BotLog(bot_id=bot_id, message=msg))
             return []
-        
+
     def update_status_to_processing(self, url: str):
         """
         Update the status of a URL to 'processing'.

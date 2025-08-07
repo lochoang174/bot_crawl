@@ -78,6 +78,7 @@ class ChromeDriverManager:
             print(f"[{self.bot_id}] ✅ Tạo thư mục profile: {self.profile_path}")
 
         options = EdgeOptions()
+        options.headless = True
         options.add_argument(f"--user-data-dir={self.profile_path}")
         options.add_argument("--profile-directory=Default")
 
@@ -86,11 +87,16 @@ class ChromeDriverManager:
         options.add_argument("--allow-running-insecure-content")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        
+        options.add_argument("--disable-features=WebRtcHideLocalIpsWithMdns")
+        options.add_argument("--disable-webrtc")
 
         try:
             os.environ['DISPLAY'] = ':1'
 
             driver = webdriver.Edge(options=options)
+            # ✅ Mở một tab mới bằng JavaScript
+            
             print(f"[{self.bot_id}] ✅ Khởi tạo Edge driver thành công với session")
             return driver
         except Exception as e:
